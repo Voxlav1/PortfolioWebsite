@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('portfolio-theme'); } catch (e) {}
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <title>Projekt-Editor · Dein Name</title>
+  <meta name="robots" content="noindex">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%234ade80'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body data-site-prefix="../">
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+  <noscript><div>Dieses Werkzeug braucht JavaScript, um zu funktionieren.</div></noscript>
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="../index.html#top"><span data-site-brand-name>Dein </span><span class="brand__highlight" data-site-brand-highlight>Name</span></a>
+
+      <nav class="nav-links" id="primary-navigation" data-nav-links aria-label="Hauptnavigation">
+        <a href="../index.html">Zur Website</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="theme-toggle" data-theme-toggle type="button" aria-label="Zu dunklem Design wechseln">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+        </button>
+        <button class="nav-toggle" data-nav-toggle type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="primary-navigation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="container">
+
+      <div class="editor-intro">
+        <p class="eyebrow">Interner Editor</p>
+        <h1>Website bearbeiten</h1>
+        <p>
+          Hier bearbeitest du sowohl deine Projekte als auch die allgemeinen Seiteninhalte
+          (Name, Hero-Text, Über mich, Kontakt, Footer) — mit Vorschau im echten Design. Diese
+          Seite ist nicht in der Navigation verlinkt, läuft komplett lokal in deinem Browser und
+          lädt/speichert nichts über das Internet.
+        </p>
+      </div>
+
+      <div class="tab-switch" role="tablist" aria-label="Editor-Bereich">
+        <button class="tab-switch__btn is-active" type="button" data-editor-tab="projects" role="tab" aria-selected="true">Projekte</button>
+        <button class="tab-switch__btn" type="button" data-editor-tab="site" role="tab" aria-selected="false">Seiteninhalte</button>
+      </div>
+
+      <!-- Verbindung zum Projektordner: einmal pro Sitzung herstellen, danach
+           speichert "Projekt speichern" automatisch in data/projects.json.
+           Nur in Chrome/Edge möglich (File System Access API) — siehe editor.js. -->
+      <div class="panel connection-status" data-connection-status>
+        <div class="connection-status__text">
+          <strong data-connection-label>Nicht verbunden</strong>
+          <span class="hint" data-connection-hint>
+            Verbinde dich einmal mit deinem Projektordner, danach speichert „Projekt speichern“
+            automatisch in data/projects.json — kein zusätzlicher Export nötig.
+          </span>
+        </div>
+        <button class="btn btn--primary btn--sm" type="button" data-connect-folder>Mit Projektordner verbinden</button>
+      </div>
+
+      <div data-tab-panel="projects">
+
+      <div class="editor-layout">
+
+        <!-- Spalte 1: vorhandene Projekte -->
+        <aside class="panel editor-list" aria-label="Vorhandene Projekte">
+          <div class="panel__head">
+            <h2>Deine Projekte</h2>
+            <button class="btn btn--secondary btn--sm" type="button" data-new-project>+ Neu</button>
+          </div>
+          <p class="hint" data-list-empty-hint hidden>Noch keine Projekte geladen.</p>
+          <ul class="project-list" data-project-list></ul>
+        </aside>
+
+        <!-- Spalte 2: Formular -->
+        <section class="panel editor-form" aria-label="Projekt bearbeiten">
+          <div class="panel__head">
+            <h2 data-form-heading>Neues Projekt</h2>
+            <span class="badge" data-form-status>Ungespeichert</span>
+          </div>
+
+          <form data-project-form novalidate>
+            <fieldset>
+              <legend>Grunddaten</legend>
+
+              <div class="field">
+                <label for="f-title">Titel *</label>
+                <input id="f-title" type="text" placeholder="z. B. Sommerfestival – Bühnenlicht">
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="f-category">Kategorie *</label>
+                  <select id="f-category">
+                    <option value="fotografie">Fotografie</option>
+                    <option value="video">Video</option>
+                    <option value="lichttechnik">Lichttechnik</option>
+                    <option value="__custom__">Andere / neue Kategorie …</option>
+                  </select>
+                </div>
+                <div class="field" data-category-custom-wrap hidden>
+                  <label for="f-category-custom">Neue Kategorie</label>
+                  <input id="f-category-custom" type="text" placeholder="z. B. installation">
+                </div>
+              </div>
+              <p class="hint" data-category-hint hidden>
+                Neue Kategorien tauchen auf der Website nur unter „Alle“ auf, solange kein
+                passender Filter-Button existiert. Ergänze bei Bedarf einen Button in index.html
+                (README, Abschnitt 3).
+              </p>
+
+              <div class="field">
+                <label for="f-id">Adresse/ID *</label>
+                <input id="f-id" type="text" placeholder="wird automatisch aus dem Titel erzeugt">
+                <p class="hint">Erscheint als project.html?id=… — nur Kleinbuchstaben, Zahlen, Bindestriche.</p>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="f-date">Datum</label>
+                  <input id="f-date" type="month">
+                </div>
+                <div class="field">
+                  <label for="f-location">Ort</label>
+                  <input id="f-location" type="text" placeholder="Stadt, DE">
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="f-client">Kunde / Kontext</label>
+                <input id="f-client" type="text" placeholder="z. B. Privat, Band-Name, Hochschule …">
+              </div>
+
+              <div class="field">
+                <label for="f-tags">Tags</label>
+                <input id="f-tags" type="text" placeholder="Bühne, Festival, Moving Heads">
+                <p class="hint">Mit Komma trennen.</p>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Beschreibung</legend>
+
+              <div class="field">
+                <label for="f-summary">Kurzbeschreibung</label>
+                <textarea id="f-summary" rows="2" placeholder="Ein Satz für Karte und Vorschau."></textarea>
+              </div>
+
+              <div class="field">
+                <label for="f-description">Ausführlicher Text</label>
+                <textarea id="f-description" rows="6" placeholder="Ein Absatz pro Leerzeile."></textarea>
+                <p class="hint">Leerzeile = neuer Absatz.</p>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Titelbild</legend>
+              <p class="hint">
+                Erscheint als Kachel-Vorschau auf der Startseite und groß oben auf der
+                Projekt-Detailseite. Kann ein Bild oder ein Video sein (Datei oder YouTube/Vimeo).
+              </p>
+
+              <div class="field">
+                <label for="f-cover-type">Art des Titelbilds</label>
+                <select id="f-cover-type">
+                  <option value="image">Bild</option>
+                  <option value="video">Video</option>
+                </select>
+              </div>
+
+              <div data-cover-fields></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Galerie (weitere Bilder &amp; Videos)</legend>
+              <div data-media-rows></div>
+              <div class="media-add-row">
+                <button class="btn btn--secondary btn--sm" type="button" data-add-media="image">+ Bild</button>
+                <button class="btn btn--secondary btn--sm" type="button" data-add-media="video">+ Video</button>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Links (Website, YouTube, Instagram …)</legend>
+              <p class="hint">Erscheinen als kleine Buttons unten auf der Projekt-Detailseite, öffnen in neuem Tab.</p>
+              <div data-link-rows></div>
+              <div class="media-add-row">
+                <button class="btn btn--secondary btn--sm" type="button" data-add-link>+ Link</button>
+              </div>
+            </fieldset>
+
+            <div class="form-actions">
+              <button class="btn btn--primary" type="submit" data-save-to-list>Projekt speichern</button>
+              <button class="btn btn--secondary" type="button" data-cancel-edit hidden>Abbrechen</button>
+              <button class="btn btn--secondary" type="button" data-delete-project hidden>Projekt löschen</button>
+            </div>
+            <p class="hint" data-form-message></p>
+          </form>
+        </section>
+
+        <!-- Spalte 3: Vorschau im echten Design -->
+        <aside class="panel editor-preview" aria-label="Vorschau">
+          <div class="panel__head">
+            <h2>Vorschau</h2>
+            <div class="preview-tabs">
+              <button class="btn btn--secondary btn--sm is-active" type="button" data-preview-tab="card">Karte</button>
+              <button class="btn btn--secondary btn--sm" type="button" data-preview-tab="detail">Detailseite</button>
+            </div>
+          </div>
+
+          <div class="preview-surface" data-preview-card>
+            <div class="preview-card-frame"></div>
+          </div>
+
+          <div class="preview-surface" data-preview-detail hidden></div>
+        </aside>
+      </div>
+
+      <!-- Nur Backup/Fallback — solange oben verbunden ist, speichert der
+           Formular-Button bereits automatisch, siehe editor.js. -->
+      <div class="panel backup-options">
+        <div class="panel__head">
+          <h2>Sicherung (optional)</h2>
+        </div>
+        <p class="hint">
+          <strong data-export-count>0 Projekte</strong> in dieser Sitzung.<span data-pending-files-hint hidden></span>
+          Diese beiden Buttons sind nur für ein zusätzliches Backup oder falls dein Browser die
+          direkte Speicherung (oben) nicht unterstützt.
+        </p>
+        <div class="export-bar__actions">
+          <button class="btn btn--secondary btn--sm" type="button" data-download-json>projects.json herunterladen</button>
+          <button class="btn btn--secondary btn--sm" type="button" data-copy-json>JSON kopieren</button>
+        </div>
+        <p class="hint" data-export-status></p>
+      </div>
+
+      <div class="panel pending-files" data-pending-files-panel hidden>
+        <h2>Noch abzulegende Dateien</h2>
+        <p class="hint">
+          Diese Dateien liegen aktuell nur im Formular. Lade sie herunter und leg sie unter dem
+          genannten Pfad in deinem Projektordner ab — sobald du oben verbunden bist, übernimmt das
+          der Browser automatisch für dich.
+        </p>
+        <ul data-pending-files-list></ul>
+      </div>
+
+      </div>
+      <!-- Ende data-tab-panel="projects" -->
+
+      <!-- ============ TAB: SEITENINHALTE (data/site.json) ============ -->
+      <section class="panel editor-form editor-form--site" data-tab-panel="site" aria-label="Seiteninhalte bearbeiten" hidden>
+        <div class="panel__head">
+          <h2>Seiteninhalte</h2>
+          <span class="badge" data-site-form-status>—</span>
+        </div>
+        <p class="hint">
+          Diese Inhalte erscheinen seitenweit: Name im Header/Footer auf allen Seiten, der Rest nur
+          auf der Startseite. Gespeichert wird in data/site.json — dieselbe Verbindung wie oben.
+        </p>
+
+        <form data-site-form novalidate>
+          <fieldset>
+            <legend>Name</legend>
+            <div class="field-row">
+              <div class="field">
+                <label for="s-brand-name">Name (normal)</label>
+                <input id="s-brand-name" type="text" placeholder="Dein">
+              </div>
+              <div class="field">
+                <label for="s-brand-highlight">Name (hervorgehoben)</label>
+                <input id="s-brand-highlight" type="text" placeholder="Name">
+              </div>
+            </div>
+            <p class="hint">Erscheint im Header als „Dein Name“ — der zweite Teil wird grün eingefärbt.</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Hero (Startseite, ganz oben)</legend>
+            <div class="field">
+              <label for="s-hero-eyebrow">Kleine Zeile über der Überschrift</label>
+              <input id="s-hero-eyebrow" type="text">
+            </div>
+            <div class="field">
+              <label for="s-hero-heading">Überschrift</label>
+              <input id="s-hero-heading" type="text">
+              <p class="hint">*Sternchen* um ein Wort machen es grün/kursiv, z. B. „*Licht*. Bild.“</p>
+            </div>
+            <div class="field">
+              <label for="s-hero-lede">Lauftext</label>
+              <textarea id="s-hero-lede" rows="3"></textarea>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Über mich</legend>
+            <div class="field">
+              <label for="s-about-heading">Überschrift</label>
+              <input id="s-about-heading" type="text">
+            </div>
+            <div class="field">
+              <label for="s-about-paragraphs">Text</label>
+              <textarea id="s-about-paragraphs" rows="6"></textarea>
+              <p class="hint">Leerzeile = neuer Absatz.</p>
+            </div>
+            <div class="field">
+              <label for="s-about-tags">Ausrüstung/Software (Tags)</label>
+              <input id="s-about-tags" type="text">
+              <p class="hint">Mit Komma trennen.</p>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="s-about-image-upload">Portrait — Datei</label>
+                <input id="s-about-image-upload" type="file" accept="image/*">
+              </div>
+              <div class="field">
+                <label for="s-about-image-path">…oder Pfad/URL</label>
+                <input id="s-about-image-path" type="text" placeholder="assets/images/portrait.jpg">
+              </div>
+            </div>
+            <div class="field">
+              <label for="s-about-image-alt">Alt-Text</label>
+              <input id="s-about-image-alt" type="text">
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Kontakt</legend>
+            <div class="field">
+              <label for="s-contact-heading">Überschrift</label>
+              <input id="s-contact-heading" type="text">
+            </div>
+            <div class="field">
+              <label for="s-contact-text">Text</label>
+              <input id="s-contact-text" type="text">
+            </div>
+            <div class="field">
+              <label for="s-contact-email">E-Mail-Adresse</label>
+              <input id="s-contact-email" type="email">
+            </div>
+            <p class="field-label">Social-Links</p>
+            <div data-site-social-rows></div>
+            <div class="media-add-row">
+              <button class="btn btn--secondary btn--sm" type="button" data-add-social>+ Social-Link</button>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Footer</legend>
+            <div class="field">
+              <label for="s-footer-copyright">Copyright-Zeile</label>
+              <input id="s-footer-copyright" type="text">
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit" data-save-site>Seiteninhalte speichern</button>
+            <button class="btn btn--secondary btn--sm" type="button" data-download-site-json>Nur als site.json herunterladen</button>
+          </div>
+          <p class="hint" data-site-form-message></p>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Interner Editor — nicht Teil der öffentlichen Website.</p>
+      <div class="footer-links">
+        <a href="../index.html">Zur Website</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/theme.js" defer></script>
+  <script src="../js/site-content.js" defer></script>
+  <script src="../js/nav.js" defer></script>
+  <script src="editor.js" defer></script>
+</body>
+</html>

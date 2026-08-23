@@ -1,0 +1,49 @@
+{
+  "_hinweis": "Allgemeine Seiteninhalte (Name, Hero-Text, Über mich, Kontakt, Footer). Wird auf jeder Seite geladen. Am einfachsten über editor/index.html (Tab 'Seiteninhalte') bearbeiten — dort auch mit Vorschau. In Texten macht *Sternchen* ein Wort grün/kursiv hervorgehoben, z. B. *Licht*.",
+  "brand": {
+    "name": "",
+    "highlight": "Simon"
+  },
+  "hero": {
+    "eyebrow": "Lichttechnik · Fotografie · Videografie",
+    "heading": "*Licht*. Bild. Bewegung.",
+    "lede": "Ich bin Simon und studiere Medienproduktion in Detmold. Nebenbei beschäftige ich mich mit Lichttechnik, Fotografie und Video – hier sammle ich ein paar der Projekte, die dabei entstanden sind."
+  },
+  "about": {
+    "heading": "Zwischen Lichtpult, Kamera und Schnittprogramm.",
+    "paragraphs": [
+      "Ich studiere Medienproduktion in Detmold und beschäftige mich dabei hauptsächlich mit Lichttechnik, Fotografie und Videografie.",
+      "Diese Seite ist ein Sammelplatz für Projekte, die dabei nach und nach entstehen – manche im Studium, manche einfach nebenbei, manche schon in der Schule."
+    ],
+    "tags": [
+      "Adobe Premiere Pro",
+      "DaVinci Resolve",
+      "Lightroom",
+      "GrandMA",
+      "Robe",
+      "Astera"
+    ],
+    "image": {
+      "src": "assets/images/placeholder-b.svg",
+      "alt": "Mein liebstes Bild!"
+    }
+  },
+  "contact": {
+    "heading": "Melde dich gerne.",
+    "text": "Ob Projektidee, Frage oder einfach so – schreib mir!",
+    "email": "sf@voxlav.de",
+    "social": [
+      {
+        "label": "Instagram",
+        "url": "https://www.instagram.com/voxsi07/"
+      },
+      {
+        "label": "YouTube",
+        "url": "#"
+      }
+    ]
+  },
+  "footer": {
+    "copyright": "© 2026 Simon. Alle Rechte vorbehalten."
+  }
+}

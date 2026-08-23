@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Platzhalterbild">
+  <defs>
+    <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e1210"/>
+      <stop offset="55%" stop-color="#1f3d29"/>
+      <stop offset="100%" stop-color="#4ade80"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="72%" cy="18%" r="55%">
+      <stop offset="0%" stop-color="#86efac" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#86efac" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#gradA)"/>
+  <rect width="800" height="1000" fill="url(#glowA)"/>
+  <circle cx="400" cy="500" r="120" fill="none" stroke="#f3f5f1" stroke-opacity="0.18" stroke-width="1.5"/>
+  <circle cx="400" cy="500" r="175" fill="none" stroke="#f3f5f1" stroke-opacity="0.12" stroke-width="1.5"/>
+  <circle cx="400" cy="500" r="230" fill="none" stroke="#f3f5f1" stroke-opacity="0.08" stroke-width="1.5"/>
+  <text x="40" y="944" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" letter-spacing="0.02em" fill="#f3f5f1" fill-opacity="0.55">Beispielbild — in projects.json ersetzen</text>
+</svg>

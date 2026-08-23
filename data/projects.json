@@ -1,0 +1,73 @@
+{
+  "_hinweis": "Das ist die zentrale Datenquelle der Seite. Neues Projekt = neues Objekt im 'projects'-Array kopieren, Werte anpassen, speichern. Kein Programmieren nötig. Details siehe README.md.",
+  "projects": [
+    {
+      "id": "sommerkonzert-der-ursulaschule",
+      "title": "Sommerkonzert der Ursulaschule",
+      "category": "fotografie",
+      "date": "",
+      "location": "Osnabrück",
+      "client": "Ursulaschule",
+      "tags": [],
+      "summary": "Fotographie für das Sommerkonzert der Ursulaschule Osnabrück, in Zusammenarbeit mit der VideoAG!",
+      "description": [],
+      "cover": {
+        "src": "assets/images/bildschirmfoto-2026-07-17-um-17-42-33.png",
+        "alt": ""
+      },
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/images/bildschirmfoto-2026-07-17-um-17-42-33.png",
+          "alt": ""
+        }
+      ]
+    },
+    {
+      "id": "maiwoche-2026",
+      "title": "Maiwoche 2026",
+      "category": "lichttechnik",
+      "date": "",
+      "location": "Osnabrück",
+      "client": "BigBand Ursulaschule",
+      "tags": [],
+      "summary": "Lichttechnik für den Auftritt der BigBand auf der Maiwoche",
+      "description": [],
+      "cover": {
+        "src": "assets/images/bildschirmfoto-2026-08-03-um-17-40-11.png",
+        "alt": ""
+      },
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/images/bildschirmfoto-2026-08-03-um-17-40-11.png",
+          "alt": ""
+        }
+      ]
+    },
+    {
+      "id": "lichtshow-fuer-ein-masterprojekt",
+      "title": "Lichtshow für ein Masterprojekt",
+      "category": "lichttechnik",
+      "date": "",
+      "location": "Detmold",
+      "client": "TH OWL",
+      "tags": [
+        "Licht",
+        "Video",
+        "Astera"
+      ],
+      "summary": "Eine Lichtshow für ein Musikvideo als Projekt einer Masterstudentin",
+      "description": [
+        "Hier durfte ich das Lichtdesign und die Lichtshow für ein Musikvideo als Masterprojekt für eine Masterstudentin realisieren."
+      ],
+      "cover": {
+        "type": "image",
+        "src": "assets/images",
+        "alt": "GrandMA 3 Visualisierung"
+      },
+      "media": [],
+      "links": []
+    }
+  ]
+}

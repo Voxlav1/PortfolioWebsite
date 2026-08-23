@@ -1,0 +1,1097 @@
+/* ==========================================================================
+   PORTFOLIO — STYLESHEET
+   ==========================================================================
+   Inhalt dieser Datei:
+     1. Design-Tokens (CSS-Variablen)  <-- HIER Farben/Schrift/Abstände anpassen
+     2. Theme (Hell / Dunkel)
+     3. Reset & Basis-Elemente
+     4. Layout-Hilfsklassen
+     5. Buttons & Formulare
+     6. Header / Navigation
+     7. Hero
+     8. Leistungen
+     9. Abschnitts-Überschriften (wiederverwendet)
+    10. Filter-Leiste
+    11. Projekt-Grid & Karten
+    12. Über-mich
+    13. Kontakt
+    14. Footer
+    15. Projekt-Detailseite
+    16. Media-Galerie & Lightbox
+    17. Rechtliche Seiten (Impressum / Datenschutz)
+    18. Responsive Anpassungen
+    19. Barrierefreiheit / Reduced Motion
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. DESIGN-TOKENS
+   Das ist der zentrale Ort für alle Anpassungen. Farben, Schriften,
+   Abstände, Radien etc. werden NUR hier definiert und überall im
+   Stylesheet als var(--...) wiederverwendet.
+   ========================================================================== */
+:root {
+
+  /* ---- Schriftarten — HIER ANPASSEN, um eigene Web-Fonts einzubinden ----
+     Standard: reine System-Schriftarten (schnell, ohne externe Anfragen,
+     keine Datenschutz-Fragen durch Web-Font-Anbieter). Siehe README.md,
+     Abschnitt "Eigene Schriftarten", für den Umstieg auf z. B. Google Fonts. */
+  --font-display: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* ---- Typografische Skala (fluid mit clamp()) ---- */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+  --text-3xl: clamp(1.9rem, 1.5rem + 1.8vw, 2.75rem);
+  --text-hero: clamp(2.6rem, 1.9rem + 3.4vw, 4.75rem);
+
+  /* ---- Abstands-Skala ---- */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+  --space-3xl: 9rem;
+
+  /* ---- Layout ---- */
+  --container-width: 1280px;
+  --container-padding: clamp(1.25rem, 4vw, 3rem);
+  --header-height: 84px;
+
+  /* ---- Radien, Schatten, Übergänge ---- */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.35);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 220ms var(--ease);
+  --transition-slow: 420ms var(--ease);
+
+  /* ---- Glas-Effekt (Header, mobiles Menü, Lightbox, Icon-Buttons) ---- */
+  --blur-glass: 16px;
+  --blur-glass-strong: 22px;
+  --color-scrim: rgba(6, 10, 8, 0.78); /* dunkler Schleier hinter der Lightbox, bewusst themeunabhängig */
+}
+
+/* ==========================================================================
+   2. THEME — Hell (Standard) & Dunkel
+   Das aktive Theme wird per data-theme-Attribut auf <html> gesteuert
+   (siehe js/theme.js). Jedes Theme hat eine eigene Akzentfarbe: im hellen
+   Theme bewusst gedämpftes Pastell, im dunklen Theme kräftiges Leuchtgrün.
+   ========================================================================== */
+[data-theme="light"] {
+  --color-bg: #fafaf9;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted: #f1f2ee;
+  --color-text: #14161a;
+  --color-text-muted: #5b6169;
+  --color-border: #e4e6e0;
+
+  /* ---- Akzentfarbe, helles Theme: gedämpftes Pastell-Grün ----
+     HIER ANPASSEN, um die Akzentfarbe im hellen Theme zu ändern. Die
+     dunkle Variante (weiter unten) bleibt bewusst kräftiger, weil
+     Pastelltöne auf dunklem Grund schnell blass/verwaschen wirken. */
+  --color-accent: #a8e6cf;          /* Pastell-Mintgrün: Buttons, aktive Filter, Icon-Hintergründe */
+  --color-accent-strong: #2f9e63;   /* kräftigere Variante — für Text/Icons, die auf Weiß lesbar bleiben müssen */
+  --color-accent-contrast: #0b2e1a; /* Textfarbe AUF der Akzentfarbe (z. B. Buttons) */
+  --color-accent-soft: #eaf9f1;     /* sehr helles Pastell für Badge-/Icon-Hintergründe */
+
+  --color-link: var(--color-accent-strong);
+  --color-scrollbar: rgba(0, 0, 0, 0.2);
+  --color-glass: rgba(255, 255, 255, 0.55);
+  --color-glass-strong: rgba(255, 255, 255, 0.78);
+  --color-glass-border: rgba(20, 22, 26, 0.08);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0e1210;
+  --color-bg-elevated: #171b18;
+  --color-bg-muted: #1c211d;
+  --color-text: #f3f5f1;
+  --color-text-muted: #a7ada4;
+  --color-border: #2a302b;
+
+  /* ---- Akzentfarbe, dunkles Theme: kräftiges, leuchtendes Grün ---- */
+  --color-accent: #4ade80;
+  --color-accent-strong: #4ade80;
+  --color-accent-contrast: #0b2e1a;
+  --color-accent-soft: rgba(74, 222, 128, 0.14);
+
+  --color-link: var(--color-accent);
+  --color-scrollbar: rgba(255, 255, 255, 0.25);
+  --color-glass: rgba(23, 27, 24, 0.45);
+  --color-glass-strong: rgba(14, 18, 16, 0.72);
+  --color-glass-border: rgba(243, 245, 241, 0.09);
+  color-scheme: dark;
+}
+
+
+/* ==========================================================================
+   3. RESET & BASIS-ELEMENTE
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+* { margin: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Verhindert, dass Anker-Sprungziele (z. B. #arbeiten) unter dem
+     schwebenden, halbtransparenten Header landen. */
+  scroll-padding-top: calc(var(--header-height) + var(--space-sm));
+}
+
+body {
+  min-height: 100svh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+img, picture, video, svg { display: block; max-width: 100%; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+p { color: var(--color-text); }
+p + p { margin-top: var(--space-sm); }
+
+a { color: inherit; text-decoration: none; }
+
+ul, ol { list-style: none; padding: 0; }
+
+button, input, textarea, select { font: inherit; color: inherit; }
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+::selection { background: var(--color-accent); color: var(--color-accent-contrast); }
+
+/* Eigene Scrollbar-Färbung (nur Webkit/Blink) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--color-scrollbar); border-radius: var(--radius-full); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Sichtbarer Fokus-Ring für Tastaturnutzung — wichtig für Barrierefreiheit */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--space-sm);
+  z-index: 1000;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: top var(--transition);
+}
+.skip-link:focus { top: var(--space-sm); }
+
+noscript div {
+  display: block;
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  text-align: center;
+  padding: var(--space-sm);
+  font-size: var(--text-sm);
+}
+
+
+/* ==========================================================================
+   4. LAYOUT-HILFSKLASSEN
+   ========================================================================== */
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--container-padding);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+section { padding-block: var(--space-2xl); }
+
+.section-alt { background: var(--color-bg-muted); }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+em, .accent-text {
+  font-style: italic;
+  color: var(--color-accent-strong);
+}
+
+
+/* ==========================================================================
+   5. BUTTONS & FORMULARE
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0.85em 1.6em;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: transform var(--transition), background-color var(--transition), color var(--transition), border-color var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: var(--shadow-sm);
+}
+.btn--primary:hover { box-shadow: var(--shadow-md); }
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.btn--secondary:hover { border-color: var(--color-accent); color: var(--color-accent-strong); }
+
+.btn--icon svg { width: 1em; height: 1em; }
+
+
+/* ==========================================================================
+   6. HEADER / NAVIGATION
+   ========================================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  background: var(--color-glass);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.brand__highlight { color: var(--color-accent-strong); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.nav-links a {
+  position: relative;
+  padding-block: var(--space-2xs);
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+}
+.nav-links a:hover { color: var(--color-text); }
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  width: 0; height: 2px;
+  background: var(--color-accent);
+  transition: width var(--transition);
+}
+.nav-links a:hover::after { width: 100%; }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.theme-toggle,
+.nav-toggle {
+  display: grid;
+  place-items: center;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--color-text);
+  transition: border-color var(--transition), transform var(--transition), background-color var(--transition);
+}
+.theme-toggle:hover { border-color: var(--color-accent); transform: rotate(-8deg); }
+.theme-toggle svg { width: 19px; height: 19px; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* Der Burger-Button ist ausschließlich in der mobilen Ansicht sichtbar
+   (siehe @media (max-width: 720px) weiter unten) — auf dem Desktop steht
+   die Navigation immer ausgeschrieben im Header, nie hinter einem Menü-Icon. */
+.nav-toggle { display: none; }
+.nav-toggle svg { width: 18px; height: 18px; }
+
+
+/* ==========================================================================
+   7. HERO
+   ========================================================================== */
+.hero {
+  padding-top: clamp(3.5rem, 4vw + 2rem, 7rem);
+  padding-bottom: var(--space-2xl);
+}
+
+.hero__eyebrow { margin-bottom: var(--space-md); }
+
+.hero h1 {
+  font-size: var(--text-hero);
+  max-width: 18ch;
+  letter-spacing: -0.01em;
+}
+
+.hero__lede {
+  margin-top: var(--space-md);
+  max-width: 56ch;
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.hero__scroll {
+  margin-top: var(--space-2xl);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.hero__scroll svg {
+  width: 14px; height: 14px;
+  animation: bob 2.2s var(--ease) infinite;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+
+/* ==========================================================================
+   8. LEISTUNGEN
+   ========================================================================== */
+.services-grid {
+  margin-top: var(--space-xl);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+}
+
+.service-card__icon {
+  display: grid;
+  place-items: center;
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  margin-bottom: var(--space-md);
+}
+.service-card__icon svg { width: 24px; height: 24px; }
+
+.service-card h3 { font-size: var(--text-xl); margin-bottom: var(--space-2xs); }
+.service-card p { color: var(--color-text-muted); font-size: var(--text-sm); }
+
+.service-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-top: auto; /* schiebt die Zeile ans Kartenende, auch bei unterschiedlich langen Texten */
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent-strong);
+}
+.service-card__cta svg { width: 16px; height: 16px; transition: transform var(--transition); }
+.service-card:hover .service-card__cta svg { transform: translateX(4px); }
+
+
+/* ==========================================================================
+   9. ABSCHNITTS-ÜBERSCHRIFTEN
+   ========================================================================== */
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.section-heading h2 {
+  font-size: var(--text-3xl);
+  margin-top: var(--space-2xs);
+  max-width: 20ch;
+}
+
+.section-heading p {
+  max-width: 42ch;
+  color: var(--color-text-muted);
+}
+
+
+/* ==========================================================================
+   10. FILTER-LEISTE
+   ========================================================================== */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-top: var(--space-lg);
+}
+
+.filter-btn {
+  padding: 0.6em 1.3em;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+.filter-btn:hover { border-color: var(--color-accent); color: var(--color-text); }
+.filter-btn.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+
+/* ==========================================================================
+   11. PROJEKT-GRID & KARTEN
+   ========================================================================== */
+.project-grid {
+  margin-top: var(--space-lg);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-lg) var(--space-md);
+}
+
+.project-grid[hidden] { display: none; }
+
+.project-card__link { display: block; group: card; }
+
+.project-card__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-muted);
+}
+
+.project-card__image {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+.project-card__link:hover .project-card__image { transform: scale(1.06); }
+
+/* Abspiel-Symbol, wenn das Titelbild ein Video ist (siehe js/main.js).
+   ::before (Kreis) und ::after (Dreieck) teilen sich per grid-area dieselbe
+   Zelle, damit beide unabhängig von place-items: center exakt übereinander
+   sitzen — in Mal- statt DOM-Reihenfolge liegt ::after (Dreieck) oben. */
+.project-card__play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.project-card__play[hidden] { display: none; }
+.project-card__play::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(11, 13, 12, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+}
+.project-card__play::after {
+  content: "";
+  grid-area: 1 / 1;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent #f3f5f1;
+  transform: translateX(2px);
+}
+
+.project-card__body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+}
+
+.project-card__text { min-width: 0; }
+
+.project-card__category {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+}
+
+.project-card__title {
+  margin-top: var(--space-3xs);
+  font-size: var(--text-lg);
+  font-family: var(--font-display);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card__arrow {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform var(--transition), background-color var(--transition), border-color var(--transition), color var(--transition);
+}
+.project-card__link:hover .project-card__arrow {
+  transform: translateX(4px);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.empty-state {
+  margin-top: var(--space-lg);
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+
+/* ==========================================================================
+   12. ÜBER MICH
+   ========================================================================== */
+.about {
+  display: grid;
+  grid-template-columns: minmax(240px, 380px) 1fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+.about__media {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.about__media img { width: 100%; height: 100%; object-fit: cover; }
+
+.about__body p { color: var(--color-text-muted); font-size: var(--text-lg); }
+
+.about__tags {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.tag {
+  padding: 0.4em 0.9em;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+
+/* ==========================================================================
+   13. KONTAKT
+   ========================================================================== */
+.contact { text-align: center; }
+
+.contact .section-heading { justify-content: center; text-align: center; flex-direction: column; align-items: center; }
+.contact .section-heading p { max-width: 50ch; }
+
+.contact__email {
+  display: inline-block;
+  margin-top: var(--space-lg);
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.1rem + 2.4vw, 3rem);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border);
+  transition: color var(--transition), border-color var(--transition);
+  word-break: break-word;
+}
+.contact__email:hover { color: var(--color-accent-strong); border-color: var(--color-accent); }
+
+.social-links {
+  margin-top: var(--space-xl);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.social-links a {
+  display: grid;
+  place-items: center;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--transition), color var(--transition), transform var(--transition);
+}
+.social-links a:hover { border-color: var(--color-accent); color: var(--color-accent-strong); transform: translateY(-3px); }
+.social-links svg { width: 19px; height: 19px; }
+
+
+/* ==========================================================================
+   14. FOOTER
+   ========================================================================== */
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-lg);
+}
+
+.site-footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.footer-links { display: flex; gap: var(--space-md); }
+.footer-links a { transition: color var(--transition); }
+.footer-links a:hover { color: var(--color-text); }
+
+.back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+}
+.back-to-top:hover { color: var(--color-accent-strong); }
+
+
+/* ==========================================================================
+   15. PROJEKT-DETAILSEITE
+   ========================================================================== */
+.project-detail { padding-block: var(--space-xl) var(--space-2xl); }
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition), gap var(--transition);
+}
+.back-link:hover { color: var(--color-text); gap: var(--space-xs); }
+
+.project-detail__header { margin-top: var(--space-lg); max-width: 70ch; }
+
+.project-detail__category {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+}
+
+.project-detail__title {
+  margin-top: var(--space-xs);
+  font-size: var(--text-3xl);
+}
+
+.project-detail__meta {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.project-detail__meta li { display: flex; align-items: center; gap: var(--space-3xs); }
+.project-detail__meta svg { width: 15px; height: 15px; }
+
+.project-detail__intro {
+  margin-top: var(--space-lg);
+  max-width: 65ch;
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+/* Großes Titelbild/-video oben auf der Detailseite. Kann laut Projektdaten
+   ein Bild ODER ein Video sein (Datei/YouTube/Vimeo) — die Fallunterscheidung
+   übernimmt js/project.js, hier wird nur die Größe/Form vorgegeben. */
+.project-detail__hero {
+  margin-top: var(--space-xl);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.project-detail__hero .media-item { border-radius: 0; }
+.project-detail__hero .media-item--image img { aspect-ratio: 16 / 9; cursor: zoom-in; }
+.project-detail__hero .media-item--video video { max-height: 70vh; }
+
+.project-detail__gallery {
+  margin-top: var(--space-2xl);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-md);
+}
+
+.project-detail__description {
+  margin-top: var(--space-2xl);
+  max-width: 65ch;
+}
+.project-detail__description p { color: var(--color-text-muted); }
+
+.project-detail__tags {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+/* Externe Links (Website, YouTube, Instagram …) — siehe "links" in projects.json */
+.project-detail__links {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.link-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0.6em 1.1em;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: border-color var(--transition), color var(--transition), background-color var(--transition);
+}
+.link-pill:hover { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.link-pill svg { width: 14px; height: 14px; }
+
+.project-detail__nav {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+}
+
+.project-nav-link { color: var(--color-text-muted); transition: color var(--transition); }
+.project-nav-link:hover { color: var(--color-accent-strong); }
+.project-nav-link--next { text-align: right; margin-left: auto; }
+
+.loading-state {
+  padding-block: var(--space-3xl);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.not-found { padding-block: var(--space-3xl); text-align: center; }
+.not-found h1 { font-size: var(--text-3xl); }
+.not-found p { margin-top: var(--space-sm); color: var(--color-text-muted); }
+.not-found .btn { margin-top: var(--space-lg); }
+
+
+/* ==========================================================================
+   16. MEDIA-GALERIE & LIGHTBOX
+   ========================================================================== */
+.media-item {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-bg-muted);
+}
+
+.media-item--image img {
+  width: 100%; height: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  cursor: zoom-in;
+  transition: transform var(--transition-slow);
+}
+.media-item--image:hover img { transform: scale(1.04); }
+
+.media-item--video {
+  grid-column: 1 / -1;
+}
+.media-item--video video {
+  width: 100%;
+  max-height: 78vh;
+  background: #000;
+}
+
+.media-item__embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.media-item__embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: var(--color-scrim);
+  backdrop-filter: blur(var(--blur-glass-strong));
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong));
+  padding: var(--space-lg);
+  animation: fade-in var(--transition) both;
+}
+.lightbox[hidden] { display: none; }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.lightbox__image {
+  max-width: min(90vw, 1100px);
+  max-height: 86vh;
+  width: auto; height: auto;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+
+.lightbox__close,
+.lightbox__prev,
+.lightbox__next {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f3f5f1;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background-color var(--transition), transform var(--transition);
+}
+.lightbox__close:hover,
+.lightbox__prev:hover,
+.lightbox__next:hover { background: var(--color-accent); color: var(--color-accent-contrast); }
+
+.lightbox__close { top: var(--space-md); right: var(--space-md); }
+.lightbox__prev { left: var(--space-md); top: 50%; transform: translateY(-50%); }
+.lightbox__next { right: var(--space-md); top: 50%; transform: translateY(-50%); }
+.lightbox__prev:hover, .lightbox__next:hover { transform: translateY(-50%) scale(1.05); }
+.lightbox__close svg, .lightbox__prev svg, .lightbox__next svg { width: 18px; height: 18px; }
+
+
+/* ==========================================================================
+   17. RECHTLICHE SEITEN (Impressum / Datenschutz)
+   ========================================================================== */
+.legal-page { padding-block: var(--space-xl) var(--space-2xl); }
+.legal-page h1 { font-size: var(--text-3xl); }
+.legal-page h2 { font-size: var(--text-xl); margin-top: var(--space-xl); margin-bottom: var(--space-xs); }
+.legal-page p, .legal-page li { color: var(--color-text-muted); }
+.legal-page ul { list-style: disc; padding-left: 1.4em; margin-top: var(--space-2xs); }
+.legal-page li { margin-top: var(--space-3xs); }
+.legal-page a { color: var(--color-link); text-decoration: underline; text-underline-offset: 2px; }
+
+.legal-notice {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  max-width: 70ch;
+}
+.legal-notice strong { color: var(--color-accent-strong); }
+
+
+/* ==========================================================================
+   18. RESPONSIVE ANPASSUNGEN
+   ========================================================================== */
+@media (max-width: 900px) {
+  .about { grid-template-columns: 1fr; }
+  .about__media { max-width: 380px; }
+  .services-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px) {
+  :root { --header-height: 72px; }
+
+  .nav-toggle { display: grid; }
+
+  /* Ausklapp-Menü: dieselbe Glas-Optik wie der Header (Bereich 6), nur als
+     eigene schwebende Fläche darunter — daher hier eine eigene Blur-Angabe. */
+  .nav-links {
+    position: fixed;
+    top: var(--header-height);
+    left: 0; right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    background: var(--color-glass-strong);
+    backdrop-filter: blur(var(--blur-glass));
+    -webkit-backdrop-filter: blur(var(--blur-glass));
+    border-bottom: 1px solid var(--color-glass-border);
+    padding: var(--space-sm) var(--container-padding) var(--space-md);
+    transform: translateY(-8px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+  }
+  .nav-links.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .nav-links a { width: 100%; padding-block: var(--space-xs); font-size: var(--text-lg); }
+
+  .services-grid { grid-template-columns: 1fr; }
+
+  .project-detail__nav { flex-direction: column; }
+  .project-nav-link--next { text-align: left; margin-left: 0; }
+
+  .lightbox__prev, .lightbox__next { width: 40px; height: 40px; }
+  .lightbox__prev { left: var(--space-2xs); }
+  .lightbox__next { right: var(--space-2xs); }
+}
+
+@media (max-width: 480px) {
+  .site-footer .container { flex-direction: column; align-items: flex-start; }
+}
+
+
+/* ==========================================================================
+   19. BARRIEREFREIHEIT / REDUCED MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

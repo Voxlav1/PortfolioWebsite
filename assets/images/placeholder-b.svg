@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Platzhalterbild">
+  <defs>
+    <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0c0b"/>
+      <stop offset="55%" stop-color="#273a30"/>
+      <stop offset="100%" stop-color="#5c8a72"/>
+    </linearGradient>
+    <radialGradient id="glowB" cx="25%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#a7ada4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#a7ada4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#gradB)"/>
+  <rect width="800" height="1000" fill="url(#glowB)"/>
+  <line x1="0" y1="640" x2="800" y2="420" stroke="#f3f5f1" stroke-opacity="0.10" stroke-width="1.5"/>
+  <line x1="0" y1="740" x2="800" y2="520" stroke="#f3f5f1" stroke-opacity="0.08" stroke-width="1.5"/>
+  <line x1="0" y1="840" x2="800" y2="620" stroke="#f3f5f1" stroke-opacity="0.06" stroke-width="1.5"/>
+  <text x="40" y="944" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" letter-spacing="0.02em" fill="#f3f5f1" fill-opacity="0.55">Beispielbild — in projects.json ersetzen</text>
+</svg>
