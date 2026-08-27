@@ -47,7 +47,7 @@
   --text-xl: clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem);
   --text-2xl: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
   --text-3xl: clamp(1.9rem, 1.5rem + 1.8vw, 2.75rem);
-  --text-hero: clamp(2.6rem, 1.9rem + 3.4vw, 4.75rem);
+  --text-hero: clamp(2.4rem, 1.7rem + 3vw, 4.1rem);
 
   /* ---- Abstands-Skala ---- */
   --space-3xs: 0.25rem;
@@ -179,6 +179,12 @@ p + p { margin-top: var(--space-sm); }
 a { color: inherit; text-decoration: none; }
 
 ul, ol { list-style: none; padding: 0; }
+
+/* Garantiert, dass das hidden-Attribut IMMER greift — auch wenn ein Element
+   zusätzlich eine Klasse mit eigenem display trägt (z. B. .field, display:
+   flex). Ohne diese Regel gewinnt bei gleicher Spezifität die Klasse gegen
+   den Browser-Standard für [hidden], das Element bliebe sichtbar. */
+[hidden] { display: none !important; }
 
 button, input, textarea, select { font: inherit; color: inherit; }
 
@@ -345,6 +351,7 @@ em, .accent-text {
   gap: var(--space-lg);
   font-size: var(--text-sm);
   font-weight: 500;
+  margin-left: auto; /* rückt Nav + header-actions gemeinsam nach rechts, Marke bleibt links */
 }
 
 .nav-links a {
@@ -396,20 +403,44 @@ em, .accent-text {
 .nav-toggle { display: none; }
 .nav-toggle svg { width: 18px; height: 18px; }
 
+/* Zweite Kopie des Theme-Umschalters im Ausklapp-Menü (siehe Bereich 6) —
+   nur auf schmalen Bildschirmen sichtbar (Layout/Größe siehe mobile Media
+   Query weiter unten), ersetzt dort die runde Header-Variante. */
+.theme-toggle--menu { display: none; }
+
 
 /* ==========================================================================
    7. HERO
    ========================================================================== */
 .hero {
   padding-top: clamp(3.5rem, 4vw + 2rem, 7rem);
-  padding-bottom: var(--space-2xl);
+  padding-bottom: var(--space-lg);
 }
 
-.hero__eyebrow { margin-bottom: var(--space-md); }
+/* Direkt unter dem Hero, bewusst mit weniger Abstand nach oben als andere
+   Abschnitte — wirkt dadurch wie eine unmittelbare Fortsetzung des Hero. */
+#bereiche { padding-top: var(--space-lg); }
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 380px);
+  gap: var(--space-lg);
+  align-items: center;
+}
+/* Ohne das würde die Überschrift (bewusst einzeilig, siehe .hero h1) die
+   Spalte über ihren fairen Anteil hinaus aufzwingen und die Seite horizontal
+   überlaufen lassen, statt bei Bedarf normal umzubrechen. */
+.hero__content { min-width: 0; }
+
+.hero__media {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.hero__media img { width: 100%; height: 100%; object-fit: cover; }
 
 .hero h1 {
   font-size: var(--text-hero);
-  max-width: 18ch;
   letter-spacing: -0.01em;
 }
 
@@ -427,81 +458,70 @@ em, .accent-text {
   margin-top: var(--space-lg);
 }
 
-.hero__scroll {
-  margin-top: var(--space-2xl);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2xs);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.hero__scroll svg {
-  width: 14px; height: 14px;
-  animation: bob 2.2s var(--ease) infinite;
-}
-
-@keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
-}
 
 
 /* ==========================================================================
-   8. LEISTUNGEN
+   8. BEREICHE-KARTEN (eigener Abschnitt zwischen Hero und Arbeiten — Text/
+   Werkzeug-Tags pro Karte kommen aus data/site.json, Feld "services", siehe
+   js/site-content.js. Icon + Titel sind fix im HTML.)
    ========================================================================== */
-.services-grid {
-  margin-top: var(--space-xl);
+.about-services__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
-.service-card {
+/* Drei gleich hohe Zeilenabschnitte pro Karte: Icon+Titel, dann Text, dann
+   Werkzeug-Tags — statt Icon links und Text daneben, damit die Karte
+   schlanker wirkt und der Platz gleichmäßiger gefüllt ist. */
+.about-service-card {
   display: flex;
   flex-direction: column;
-  padding: var(--space-lg);
+  gap: var(--space-2xs);
+  padding: var(--space-sm) var(--space-sm);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
-.service-card:hover {
-  transform: translateY(-4px);
+.about-service-card:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   border-color: var(--color-accent);
 }
 
-.service-card__icon {
-  display: grid;
-  place-items: center;
-  width: 52px; height: 52px;
-  border-radius: var(--radius-md);
-  background: var(--color-accent-soft);
-  color: var(--color-accent-strong);
-  margin-bottom: var(--space-md);
-}
-.service-card__icon svg { width: 24px; height: 24px; }
-
-.service-card h3 { font-size: var(--text-xl); margin-bottom: var(--space-2xs); }
-.service-card p { color: var(--color-text-muted); font-size: var(--text-sm); }
-
-.service-card__cta {
-  display: inline-flex;
+.about-service-card__head {
+  display: flex;
   align-items: center;
   gap: var(--space-2xs);
-  margin-top: auto; /* schiebt die Zeile ans Kartenende, auch bei unterschiedlich langen Texten */
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--color-border);
-  font-size: var(--text-sm);
-  font-weight: 600;
+}
+.about-service-card__head h3 { font-size: var(--text-sm); }
+
+.about-service-card__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
   color: var(--color-accent-strong);
 }
-.service-card__cta svg { width: 16px; height: 16px; transition: transform var(--transition); }
-.service-card:hover .service-card__cta svg { transform: translateX(4px); }
+.about-service-card__icon svg { width: 15px; height: 15px; }
+
+.about-service-card p { color: var(--color-text-muted); font-size: var(--text-xs); }
+
+.about-service-card__tools {
+  margin-top: auto; /* schiebt die Tags ans Kartenende, auch bei unterschiedlich langem Text */
+  padding-top: var(--space-3xs);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+.about-service-card__tools .tag {
+  padding: 0.25em 0.65em;
+  font-size: 0.7rem;
+}
 
 
 /* ==========================================================================
@@ -534,7 +554,8 @@ em, .accent-text {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2xs);
-  margin-top: var(--space-lg);
+  /* Kein margin-top: sitzt jetzt in .section-heading neben der Überschrift
+     (Desktop) bzw. bricht mit deren eigenem "gap" darunter um (schmal). */
 }
 
 .filter-btn {
@@ -583,36 +604,25 @@ em, .accent-text {
 }
 .project-card__link:hover .project-card__image { transform: scale(1.06); }
 
-/* Abspiel-Symbol, wenn das Titelbild ein Video ist (siehe js/main.js).
-   ::before (Kreis) und ::after (Dreieck) teilen sich per grid-area dieselbe
-   Zelle, damit beide unabhängig von place-items: center exakt übereinander
-   sitzen — in Mal- statt DOM-Reihenfolge liegt ::after (Dreieck) oben. */
-.project-card__play {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
+/* Ersatz-Darstellung, wenn ein Projekt kein Titelbild hat: die
+   Kurzbeschreibung füllt dieselbe Fläche, statt dass die Kachel leer/kaputt
+   aussieht (siehe js/main.js, buildCard). */
+.project-card__media--text { background: var(--color-bg-muted); }
+.project-card__text-cover {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
 }
-.project-card__play[hidden] { display: none; }
-.project-card__play::before {
-  content: "";
-  grid-area: 1 / 1;
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: rgba(11, 13, 12, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
-}
-.project-card__play::after {
-  content: "";
-  grid-area: 1 / 1;
-  width: 0; height: 0;
-  border-style: solid;
-  border-width: 10px 0 10px 16px;
-  border-color: transparent transparent transparent #f3f5f1;
-  transform: translateX(2px);
+.project-card__text-cover p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .project-card__body {
@@ -674,31 +684,8 @@ em, .accent-text {
 
 
 /* ==========================================================================
-   12. ÜBER MICH
+   12. TAGS (Projekt-Schlagworte, Werkzeug-Tags in den Bereiche-Karten, …)
    ========================================================================== */
-.about {
-  display: grid;
-  grid-template-columns: minmax(240px, 380px) 1fr;
-  gap: var(--space-2xl);
-  align-items: center;
-}
-
-.about__media {
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.about__media img { width: 100%; height: 100%; object-fit: cover; }
-
-.about__body p { color: var(--color-text-muted); font-size: var(--text-lg); }
-
-.about__tags {
-  margin-top: var(--space-lg);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2xs);
-}
-
 .tag {
   padding: 0.4em 0.9em;
   font-size: var(--text-xs);
@@ -833,22 +820,41 @@ em, .accent-text {
   color: var(--color-text-muted);
 }
 
-/* Großes Titelbild/-video oben auf der Detailseite. Kann laut Projektdaten
-   ein Bild ODER ein Video sein (Datei/YouTube/Vimeo) — die Fallunterscheidung
-   übernimmt js/project.js, hier wird nur die Größe/Form vorgegeben. */
-.project-detail__hero {
-  margin-top: var(--space-xl);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+/* Titelbild oben auf der Detailseite (immer ein Bild, siehe README). Zeigt
+   das Originalformat linksbündig und ohne Zuschnitt. Die Rundung/Randfarbe
+   sitzt bewusst direkt auf dem <img>, nicht auf der umgebenden Box — sonst
+   bliebe (je nach Bildformat) ein sichtbarer Rand/Hintergrund der Box um ein
+   kleineres Bild übrig. Hat das Projekt kein Titelbild, bleibt [data-hero]
+   leer (siehe js/project.js) und die Kurzbeschreibung darunter
+   (.project-detail__intro) übernimmt die Stelle. */
+.project-detail__hero { margin-top: var(--space-xl); }
+.project-detail__hero .media-item--image {
+  background: none;
+  aspect-ratio: auto; /* überschreibt den festen Hochformat-Platz aus der Galerie-Regel oben */
 }
-.project-detail__hero .media-item { border-radius: 0; }
-.project-detail__hero .media-item--image img { aspect-ratio: 16 / 9; cursor: zoom-in; }
-.project-detail__hero .media-item--video video { max-height: 70vh; }
+.project-detail__hero .media-item--image img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(480px, 100%); /* 100% verhindert Überlaufen auf schmalen/mobilen Bildschirmen */
+  max-height: 50vh;
+  aspect-ratio: auto;
+  border-radius: var(--radius-lg);
+  cursor: zoom-in;
+}
 
+/* Hoch- und Querformat-Bilder bleiben in ihrem echten Seitenverhältnis
+   (kein Zuschnitt): jede Zelle ist ein "Hochformat-Platz" (4:5) — ein
+   Querformat-Bild belegt per .media-item--landscape zwei nebeneinander-
+   liegende Plätze und nimmt so deren Form an. grid-auto-flow: dense
+   schließt dabei entstehende Lücken mit späteren, kleineren Bildern.
+   Welche Klasse ein Bild bekommt, ermittelt js/project.js automatisch
+   anhand der tatsächlichen Bildmaße (naturalWidth/-Height). */
 .project-detail__gallery {
   margin-top: var(--space-2xl);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-auto-flow: dense;
   gap: var(--space-md);
 }
 
@@ -923,14 +929,29 @@ em, .accent-text {
   background: var(--color-bg-muted);
 }
 
+.media-item--image {
+  aspect-ratio: 4 / 5; /* Hochformat-Platz, siehe .project-detail__gallery oben */
+}
+.project-detail__gallery .media-item--landscape {
+  grid-column: span 2; /* zwei Hochformat-Plätze nebeneinander */
+  aspect-ratio: 8 / 5;
+}
 .media-item--image img {
   width: 100%; height: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  object-fit: cover; /* füllt den jeweiligen Platz (Hoch- oder Querformat, siehe oben) ganz aus */
   cursor: zoom-in;
   transition: transform var(--transition-slow);
 }
 .media-item--image:hover img { transform: scale(1.04); }
+
+/* "Format behalten" (siehe Editor, Galerie-Eintrag): exaktes Originalformat
+   über die volle Breite, ohne Rundung, statt in einen Hoch-/Querformat-Platz
+   eingepasst (und ggf. leicht beschnitten) zu werden. */
+.project-detail__gallery .media-item--keep-format {
+  grid-column: 1 / -1;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
 
 .media-item--video {
   grid-column: 1 / -1;
@@ -1029,10 +1050,23 @@ em, .accent-text {
 /* ==========================================================================
    18. RESPONSIVE ANPASSUNGEN
    ========================================================================== */
+/* Eigene, breitere Schwelle fürs Hero-Grid: die Überschrift soll einzeilig
+   bleiben (siehe .hero h1) — dafür braucht die Textspalte neben dem Foto
+   mehr Luft als die übrigen 900px-Anpassungen unten. */
+@media (max-width: 1200px) {
+  .hero__grid { grid-template-columns: 1fr; }
+  .hero__media { max-width: 320px; margin: var(--space-lg) auto 0; }
+}
+
+/* Ab hier ist neben dem Foto nachweislich genug Platz für eine einzeilige
+   Überschrift (siehe .hero__grid) — erst ab dieser Breite erzwingen, sonst
+   würde sie auf schmaleren/einspaltigen Bildschirmen abgeschnitten. */
+@media (min-width: 1201px) {
+  .hero h1 { white-space: nowrap; }
+}
+
 @media (max-width: 900px) {
-  .about { grid-template-columns: 1fr; }
-  .about__media { max-width: 380px; }
-  .services-grid { grid-template-columns: 1fr 1fr; }
+  .about-services__grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 720px) {
@@ -1041,19 +1075,22 @@ em, .accent-text {
   .nav-toggle { display: grid; }
 
   /* Ausklapp-Menü: dieselbe Glas-Optik wie der Header (Bereich 6), nur als
-     eigene schwebende Fläche darunter — daher hier eine eigene Blur-Angabe. */
+     eigene schwebende Fläche darunter — daher hier eine eigene Blur-Angabe.
+     Der Schatten hebt die Fläche zusätzlich vom Seiteninhalt dahinter ab. */
   .nav-links {
     position: fixed;
     top: var(--header-height);
     left: 0; right: 0;
+    margin-left: 0; /* die rechtsbündige Desktop-Regel soll das feste Ausklapp-Menü nicht verschieben */
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0;
     background: var(--color-glass-strong);
     backdrop-filter: blur(var(--blur-glass));
     -webkit-backdrop-filter: blur(var(--blur-glass));
     border-bottom: 1px solid var(--color-glass-border);
-    padding: var(--space-sm) var(--container-padding) var(--space-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-2xs) var(--container-padding) var(--space-sm);
     transform: translateY(-8px);
     opacity: 0;
     visibility: hidden;
@@ -1066,9 +1103,40 @@ em, .accent-text {
     visibility: visible;
     pointer-events: auto;
   }
-  .nav-links a { width: 100%; padding-block: var(--space-xs); font-size: var(--text-lg); }
 
-  .services-grid { grid-template-columns: 1fr; }
+  /* Jede Zeile (Links + Theme-Umschalter) deutlich vom Glas-Hintergrund
+     abgesetzt: volle Textfarbe statt gedämpft, plus Trennlinie zur nächsten Zeile. */
+  .nav-links a,
+  .theme-toggle--menu {
+    width: 100%;
+    padding-block: var(--space-sm);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-glass-border);
+  }
+  /* Trennlinie nur zwischen den Zeilen, nicht nach der letzten (egal ob
+     Link oder Theme-Umschalter zuletzt kommt). */
+  .nav-links > *:last-child { border-bottom: none; }
+
+  /* Theme-Umschalter: runde Header-Variante ausblenden, stattdessen als
+     Zeile im Menü zeigen (gleiche Optik wie die Links darüber). */
+  .header-actions > .theme-toggle:not(.theme-toggle--menu) { display: none; }
+  .theme-toggle--menu {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: none;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--color-glass-border);
+  }
+  .theme-toggle--menu:hover { transform: none; border-color: var(--color-glass-border); }
+  .theme-toggle--menu svg { width: 19px; height: 19px; flex-shrink: 0; }
+
+  .about-services__grid { grid-template-columns: 1fr; }
 
   .project-detail__nav { flex-direction: column; }
   .project-nav-link--next { text-align: left; margin-left: 0; }
@@ -1080,6 +1148,14 @@ em, .accent-text {
 
 @media (max-width: 480px) {
   .site-footer .container { flex-direction: column; align-items: flex-start; }
+
+  /* repeat(auto-fill, minmax(220px, 1fr)) rechnet sich auf sehr schmalen
+     Bildschirmen manchmal fälschlich 2 Spalten aus (eine davon dann winzig,
+     deutlich unter 220px) — hier stattdessen fest auf eine Spalte setzen.
+     Querformat-Bilder bekommen dabei ein etwas flacheres Verhältnis als im
+     2-Spalten-Fall, weil sie hier nur eine (schmalere) Spalte breit sind. */
+  .project-detail__gallery { grid-template-columns: 1fr; }
+  .project-detail__gallery .media-item--landscape { grid-column: auto; aspect-ratio: 4 / 3; }
 }
 
 

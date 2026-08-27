@@ -17,7 +17,7 @@
 (function () {
   "use strict";
 
-  var CATEGORY_LABELS = { fotografie: "Fotografie", video: "Video", lichttechnik: "Lichttechnik" };
+  var CATEGORY_LABELS = { fotografie: "Fotografie", videografie: "Videografie", lichttechnik: "Lichttechnik" };
   var KNOWN_CATEGORIES = Object.keys(CATEGORY_LABELS);
   var MONTHS = [
     "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -58,7 +58,7 @@
   function $all(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
 
   function freshCover() {
-    return { type: "image", src: "", alt: "", provider: "file", poster: "" };
+    return { type: "image", src: "", alt: "" };
   }
 
   // ---- Kleine Helfer ---------------------------------------------------------
@@ -70,6 +70,23 @@
       .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
+  }
+
+  // Ein Projekt kann mehreren Kategorien angehören ("categories": [...]).
+  // Ältere Einträge kennen noch das einzelne "category"-Feld (inkl. dem
+  // inzwischen umbenannten Wert "video") — wird hier automatisch übersetzt.
+  function normalizeCategories(project) {
+    if (Array.isArray(project.categories) && project.categories.length) return project.categories;
+    if (project.category) return [project.category === "video" ? "videografie" : project.category];
+    return [];
+  }
+
+  function categoryLabel(category) {
+    return CATEGORY_LABELS[category] || category;
+  }
+
+  function categoryLabels(categories) {
+    return categories.map(categoryLabel).join(" · ");
   }
 
   function sanitizeFilename(name) {
@@ -99,12 +116,6 @@
     var m = input.match(/vimeo\.com\/(?:video\/)?(\d+)/);
     var id = m ? m[1] : (/^\d+$/.test(input) ? input : null);
     return id ? "https://player.vimeo.com/video/" + id : input;
-  }
-
-  function extractYouTubeId(url) {
-    if (!url) return null;
-    var m = url.match(/(?:youtube(?:-nocookie)?\.com\/embed\/|youtu\.be\/)([\w-]{6,})/);
-    return m ? m[1] : null;
   }
 
   // Pfade in projects.json/site.json sind relativ zur Website-Wurzel gedacht
@@ -252,16 +263,147 @@
     return toSiteRelativePath(item.poster);
   }
 
-  function resolveCoverThumbSrc() {
-    if (coverItem.type === "video") {
-      if (coverItem.provider === "youtube") {
-        var id = extractYouTubeId(coverItem.src);
-        if (id) return "https://img.youtube.com/vi/" + id + "/hqdefault.jpg";
+  // ---- Vorschaubild automatisch aus einem Video-Frame erzeugen ----------------
+  // Lädt eine Videodatei unsichtbar, springt zu einer kurzen Stelle (nicht
+  // Frame 0 — der ist bei vielen Videos noch schwarz/leer) und zeichnet den
+  // aktuellen Frame in ein <canvas>, um daraus ein JPEG-Bild (Blob) zu machen.
+  // Funktioniert nur für Datei-Uploads (provider "file") — bei YouTube/Vimeo
+  // ist das Video ein eingebetteter Player, kein direkt lesbares Videoelement.
+  function extractVideoFrame(videoUrl) {
+    return new Promise(function (resolve, reject) {
+      if (!videoUrl) { reject(new Error("Keine Videoquelle vorhanden.")); return; }
+      var video = document.createElement("video");
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = "auto";
+      video.src = videoUrl;
+
+      var settled = false;
+      var timeoutId = setTimeout(function () { fail("Zeitüberschreitung beim Laden des Videos."); }, 10000);
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        video.removeEventListener("loadedmetadata", onLoadedMetadata);
+        video.removeEventListener("seeked", onSeeked);
+        video.removeEventListener("error", onError);
+        video.removeAttribute("src");
+        video.load();
       }
-      var poster = resolveItemPosterPreviewSrc(coverItem);
-      return poster || "../assets/images/video-poster.svg";
-    }
-    return resolveItemPreviewSrc(coverItem);
+      function fail(message) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error(message));
+      }
+      function succeed(blob) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(blob);
+      }
+      function onError() { fail("Video konnte nicht geladen werden."); }
+      function onLoadedMetadata() {
+        var duration = video.duration;
+        var target = isFinite(duration) && duration > 0 ? Math.min(1, duration * 0.1) : 0;
+        try { video.currentTime = target; } catch (e) { fail("Im Video konnte nicht gesprungen werden."); }
+      }
+      function onSeeked() {
+        var canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        if (!canvas.width || !canvas.height) { fail("Video-Abmessungen konnten nicht gelesen werden."); return; }
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) {
+          if (!blob) { fail("Frame konnte nicht als Bild gespeichert werden."); return; }
+          succeed(blob);
+        }, "image/jpeg", 0.85);
+      }
+
+      video.addEventListener("loadedmetadata", onLoadedMetadata);
+      video.addEventListener("seeked", onSeeked);
+      video.addEventListener("error", onError);
+    });
+  }
+
+  // Stabiler Dateiname fürs generierte Vorschaubild, abgeleitet vom
+  // Videodateinamen — erzeugt man es erneut, wird dieselbe Datei überschrieben
+  // statt immer neue Dateien anzuhäufen.
+  function posterFilenameFor(item) {
+    var source = (item._file && item._file.name) || item.src || "video";
+    source = source.split("/").pop().split("\\").pop();
+    var idx = source.lastIndexOf(".");
+    var base = idx > 0 ? source.slice(0, idx) : source;
+    var cleanBase = slugify(base) || "video";
+    return "assets/images/" + cleanBase + "-frame.jpg";
+  }
+
+  // Übernimmt einen erzeugten Frame (Blob) als Vorschaubild für coverItem oder
+  // einen media[]-Eintrag — über denselben pendingFiles-Mechanismus wie bei
+  // einem manuellen Datei-Upload, damit der Speichervorgang identisch ist.
+  function applyExtractedFrame(item, blob) {
+    var path = posterFilenameFor(item);
+    var file = new File([blob], path.split("/").pop(), { type: "image/jpeg" });
+    if (item._posterUrl) URL.revokeObjectURL(item._posterUrl);
+    item._posterFile = file;
+    item._posterUrl = null;
+    item.poster = path;
+    pendingFiles.set(path, file);
+  }
+
+  // Wird direkt nach dem Hochladen einer Video-Datei aufgerufen: erzeugt im
+  // Hintergrund automatisch ein Vorschaubild aus dem ersten Frame, falls noch
+  // keins gesetzt ist — leise, ohne Fehlermeldung. Schlägt es fehl, bleibt
+  // einfach der Platzhalter; der Button unten lässt sich weiterhin manuell
+  // benutzen (z. B. um erneut oder an einer anderen Stelle zu erzeugen).
+  function autoGenerateFrameIfNeeded(item, rerender) {
+    if (item.poster) return;
+    var source = resolveItemPreviewSrc(item);
+    if (!source) return;
+    extractVideoFrame(source)
+      .then(function (blob) {
+        if (item.poster) return; // in der Zwischenzeit manuell gesetzt
+        applyExtractedFrame(item, blob);
+        rerender();
+      })
+      .catch(function () { /* Platzhalter bleibt, Button bleibt verfügbar */ });
+  }
+
+  // Button „Vorschaubild aus Video-Frame erzeugen“ für Video-Einträge in der
+  // Galerie (das Titelbild selbst ist immer ein Bild, siehe renderCoverFields).
+  function frameExtractButton(item, rerender) {
+    var wrap = document.createElement("div");
+    wrap.className = "frame-extract";
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn btn--secondary btn--sm";
+    btn.textContent = "Vorschaubild aus Video-Frame erzeugen";
+
+    var status = document.createElement("span");
+    status.className = "hint";
+
+    btn.addEventListener("click", function () {
+      var source = resolveItemPreviewSrc(item);
+      if (!source) {
+        status.textContent = "Bitte zuerst eine Videodatei hochladen oder einen Pfad angeben.";
+        return;
+      }
+      btn.disabled = true;
+      status.textContent = "Erzeuge Vorschaubild …";
+      extractVideoFrame(source)
+        .then(function (blob) {
+          applyExtractedFrame(item, blob);
+          rerender();
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          status.textContent = (err && err.message) || "Vorschaubild konnte nicht erzeugt werden.";
+        });
+    });
+
+    wrap.appendChild(btn);
+    wrap.appendChild(status);
+    return wrap;
   }
 
   // ---- Medien-Liste (Galerie) -------------------------------------------------
@@ -270,6 +412,21 @@
       ? { type: "image", src: "", alt: "" }
       : { type: "video", provider: "file", src: "", alt: "", poster: "" };
     mediaList.push(item);
+    renderMediaRows();
+  }
+
+  // "+ Bild" wählt (anders als "+ Video") direkt mehrere Dateien auf einmal
+  // aus (siehe init()) — für jede Datei entsteht sofort ein fertiger
+  // Galerie-Eintrag, ohne erst eine leere Zeile anzulegen und die Datei
+  // dort einzeln nachzutragen. Hoch- und Querformat werden dabei gleich
+  // behandelt — welches Raster-Feld ein Bild auf der Website bekommt,
+  // entscheidet automatisch js/project.js anhand des tatsächlichen Formats.
+  function addImagesFromFiles(fileList) {
+    Array.from(fileList).forEach(function (file) {
+      var path = "assets/images/" + sanitizeFilename(file.name);
+      pendingFiles.set(path, file);
+      mediaList.push({ type: "image", src: path, alt: "", _file: file });
+    });
     renderMediaRows();
   }
 
@@ -320,13 +477,31 @@
     if (item.type === "image") {
       row.appendChild(fileAndPathField({
         fileLabel: "Datei", pathLabel: "…oder Pfad/URL", accept: "image/*", pathValue: item.src,
-        onFile: function (file) {
+        onFile: function (file, path) {
           if (item._fileUrl) URL.revokeObjectURL(item._fileUrl);
-          item._file = file; item._fileUrl = null; renderMediaRows();
+          item._file = file; item._fileUrl = null; item.src = path; renderMediaRows();
         },
         onPath: function (val) { item.src = val; updatePreview(); },
       }));
       row.appendChild(textField("Alt-Text", item.alt, function (val) { item.alt = val; }));
+
+      var keepFormatLabel = document.createElement("label");
+      keepFormatLabel.className = "checkbox-field";
+      var keepFormatInput = document.createElement("input");
+      keepFormatInput.type = "checkbox";
+      keepFormatInput.checked = !!item.keepFormat;
+      keepFormatInput.addEventListener("change", function () {
+        item.keepFormat = keepFormatInput.checked;
+        updatePreview();
+      });
+      keepFormatLabel.appendChild(keepFormatInput);
+      keepFormatLabel.appendChild(document.createTextNode(" Format behalten"));
+      row.appendChild(keepFormatLabel);
+      var keepFormatHint = document.createElement("p");
+      keepFormatHint.className = "hint";
+      keepFormatHint.textContent = "Zeigt dieses Bild in der Galerie über die volle Breite, ohne Rundung und im exakten Originalformat — statt normal einsortiert (Hoch-/Querformat-Raster).";
+      row.appendChild(keepFormatHint);
+
       var previewSrc = resolveItemPreviewSrc(item);
       if (previewSrc) row.appendChild(imagePreviewEl(previewSrc));
     } else {
@@ -339,20 +514,22 @@
       if (item.provider === "file") {
         row.appendChild(fileAndPathField({
           fileLabel: "Video-Datei", pathLabel: "…oder Pfad", accept: "video/*", pathValue: item.src,
-          onFile: function (file) {
+          onFile: function (file, path) {
             if (item._fileUrl) URL.revokeObjectURL(item._fileUrl);
-            item._file = file; item._fileUrl = null; renderMediaRows();
+            item._file = file; item._fileUrl = null; item.src = path; renderMediaRows();
+            autoGenerateFrameIfNeeded(item, renderMediaRows);
           },
           onPath: function (val) { item.src = val; updatePreview(); },
         }));
         row.appendChild(fileAndPathField({
           fileLabel: "Vorschaubild (Poster)", pathLabel: "…oder Pfad", accept: "image/*", pathValue: item.poster || "",
-          onFile: function (file) {
+          onFile: function (file, path) {
             if (item._posterUrl) URL.revokeObjectURL(item._posterUrl);
-            item._posterFile = file; item._posterUrl = null; renderMediaRows();
+            item._posterFile = file; item._posterUrl = null; item.poster = path; renderMediaRows();
           },
           onPath: function (val) { item.poster = val; updatePreview(); },
         }));
+        row.appendChild(frameExtractButton(item, renderMediaRows));
       } else {
         row.appendChild(textField(
           item.provider === "youtube" ? "YouTube-Link oder Video-ID" : "Vimeo-Link oder Video-ID",
@@ -367,93 +544,57 @@
   }
 
   // ---- Titelbild (Bild oder Video) -------------------------------------------
+  // Das Titelbild ist immer ein Bild (kein Video) — siehe README, Abschnitt
+  // "Titelbild". Für Videos: als normaler Galerie-Eintrag anlegen (siehe
+  // buildMediaRowElement), der dort auch ein automatisch erzeugtes
+  // Vorschaubild bekommen kann.
   function renderCoverFields() {
     var container = $("[data-cover-fields]");
     container.innerHTML = "";
 
-    if (coverItem.type === "image") {
-      container.appendChild(fileAndPathField({
-        fileLabel: "Datei", pathLabel: "…oder Pfad/URL", accept: "image/*", pathValue: coverItem.src,
-        onFile: function (file) {
-          if (coverItem._fileUrl) URL.revokeObjectURL(coverItem._fileUrl);
-          coverItem._file = file; coverItem._fileUrl = null; renderCoverFields();
-        },
-        onPath: function (val) { coverItem.src = val; updatePreview(); },
-      }));
-      container.appendChild(textField("Alt-Text", coverItem.alt, function (val) { coverItem.alt = val; }));
-      var previewSrc = resolveItemPreviewSrc(coverItem);
-      if (previewSrc) container.appendChild(imagePreviewEl(previewSrc));
-    } else {
-      container.appendChild(selectField("Quelle", [
-        { value: "file", label: "Datei-Upload" },
-        { value: "youtube", label: "YouTube" },
-        { value: "vimeo", label: "Vimeo" },
-      ], coverItem.provider, function (val) { coverItem.provider = val; renderCoverFields(); }));
+    container.appendChild(fileAndPathField({
+      fileLabel: "Datei", pathLabel: "…oder Pfad/URL", accept: "image/*", pathValue: coverItem.src,
+      onFile: function (file, path) {
+        if (coverItem._fileUrl) URL.revokeObjectURL(coverItem._fileUrl);
+        coverItem._file = file; coverItem._fileUrl = null; coverItem.src = path; renderCoverFields();
+      },
+      onPath: function (val) { coverItem.src = val; updatePreview(); },
+    }));
+    container.appendChild(textField("Alt-Text", coverItem.alt, function (val) { coverItem.alt = val; }));
+    var previewSrc = resolveItemPreviewSrc(coverItem);
+    if (previewSrc) container.appendChild(imagePreviewEl(previewSrc));
 
-      if (coverItem.provider === "file") {
-        container.appendChild(fileAndPathField({
-          fileLabel: "Video-Datei", pathLabel: "…oder Pfad", accept: "video/*", pathValue: coverItem.src,
-          onFile: function (file) {
-            if (coverItem._fileUrl) URL.revokeObjectURL(coverItem._fileUrl);
-            coverItem._file = file; coverItem._fileUrl = null; renderCoverFields();
-          },
-          onPath: function (val) { coverItem.src = val; updatePreview(); },
-        }));
-      } else {
-        container.appendChild(textField(
-          coverItem.provider === "youtube" ? "YouTube-Link oder Video-ID" : "Vimeo-Link oder Video-ID",
-          coverItem.src,
-          function (val) {
-            coverItem.src = coverItem.provider === "youtube" ? toYouTubeEmbed(val) : toVimeoEmbed(val);
-            updatePreview();
-          }
-        ));
-      }
-
-      container.appendChild(textField("Alt-Text", coverItem.alt, function (val) { coverItem.alt = val; }));
-
-      if (coverItem.provider !== "youtube") {
-        container.appendChild(fileAndPathField({
-          fileLabel: "Vorschaubild (Poster)", pathLabel: "…oder Pfad", accept: "image/*", pathValue: coverItem.poster || "",
-          onFile: function (file) {
-            if (coverItem._posterUrl) URL.revokeObjectURL(coverItem._posterUrl);
-            coverItem._posterFile = file; coverItem._posterUrl = null; renderCoverFields();
-          },
-          onPath: function (val) { coverItem.poster = val; updatePreview(); },
-        }));
-      } else {
-        var hint = document.createElement("p");
-        hint.className = "hint";
-        hint.textContent = "Vorschaubild wird automatisch von YouTube übernommen.";
-        container.appendChild(hint);
-      }
-    }
+    var statusBadge = $("[data-cover-status]");
+    statusBadge.hidden = !coverItem.src;
 
     updatePreview();
   }
 
   // ---- Formular <-> Datenmodell (Projekte) ------------------------------------
-  function setCategorySelect(category) {
-    var select = $("#f-category");
-    var customWrap = $("[data-category-custom-wrap]");
-    var hint = $("[data-category-hint]");
-    if (!category || KNOWN_CATEGORIES.indexOf(category) > -1) {
-      select.value = category || "fotografie";
-      customWrap.hidden = true;
-      hint.hidden = true;
-      $("#f-category-custom").value = "";
-    } else {
-      select.value = "__custom__";
-      customWrap.hidden = false;
-      hint.hidden = false;
-      $("#f-category-custom").value = category;
-    }
+  // Setzt die Kategorie-Checkboxen + das Freitextfeld anhand einer Liste von
+  // Kategorie-Werten (z. B. beim Laden eines vorhandenen Projekts).
+  function setCategoryCheckboxes(categories) {
+    $all("[data-category-checkbox]").forEach(function (cb) {
+      cb.checked = categories.indexOf(cb.value) > -1;
+    });
+    var customOnes = categories.filter(function (c) { return KNOWN_CATEGORIES.indexOf(c) === -1; });
+    $("#f-category-custom").value = customOnes.join(", ");
   }
 
-  function getCategoryValue() {
-    var value = $("#f-category").value;
-    if (value === "__custom__") return slugify($("#f-category-custom").value.trim());
-    return value;
+  // Liest die aktuelle Kategorie-Auswahl (Checkboxen + Freitext) als Array,
+  // ohne Duplikate, in der Reihenfolge: bekannte Kategorien zuerst.
+  function getCategoryValues() {
+    var checked = $all("[data-category-checkbox]:checked").map(function (cb) { return cb.value; });
+    var custom = $("#f-category-custom").value
+      .split(",")
+      .map(function (s) { return slugify(s.trim()); })
+      .filter(Boolean);
+    var seen = {};
+    return checked.concat(custom).filter(function (c) {
+      if (seen[c]) return false;
+      seen[c] = true;
+      return true;
+    });
   }
 
   function collectProject() {
@@ -466,41 +607,45 @@
       if (m.type === "video") {
         out.provider = m.provider;
         if (m.provider === "file" && m.poster) out.poster = m.poster;
+      } else if (m.keepFormat) {
+        out.keepFormat = true;
       }
       return out;
     });
 
-    var cover = { type: coverItem.type, src: coverItem.src || "", alt: coverItem.alt || "" };
-    if (coverItem.type === "video") {
-      cover.provider = coverItem.provider;
-      if (coverItem.poster) cover.poster = coverItem.poster;
-    }
+    // Titelbild ist optional (immer ein Bild) — ohne gesetzten Pfad wird gar
+    // kein "cover" gespeichert (die Website zeigt dann die Kurzbeschreibung).
+    var cover = coverItem.src ? { type: "image", src: coverItem.src, alt: coverItem.alt || "" } : null;
 
     var links = linksList
       .filter(function (l) { return l.url; })
       .map(function (l) { return { label: l.label || "", url: l.url }; });
 
-    return {
+    var project = {
       id: $("#f-id").value.trim() || slugify(title),
       title: title,
-      category: getCategoryValue(),
+      categories: getCategoryValues(),
       date: $("#f-date").value,
       location: $("#f-location").value.trim(),
       client: $("#f-client").value.trim(),
       tags: tags,
       summary: $("#f-summary").value.trim(),
       description: description,
-      cover: cover,
       media: media,
       links: links,
     };
+    if (cover) project.cover = cover;
+    if ($("#f-offline").checked) project.offline = true;
+    return project;
   }
 
   function validateProject(project) {
     var errors = [];
     if (!project.title) errors.push("Titel fehlt.");
-    if (!project.category) errors.push("Kategorie fehlt.");
-    if (!project.cover.src) errors.push("Titelbild (Datei, Pfad oder Video-Link) fehlt.");
+    if (!project.categories.length) errors.push("Mindestens eine Kategorie fehlt.");
+    if (!project.cover && !project.summary) {
+      errors.push("Ohne Titelbild wird die Kurzbeschreibung an dessen Stelle gezeigt — bitte mindestens eine der beiden angeben.");
+    }
     if (!/^[a-z0-9-]+$/.test(project.id)) errors.push("Adresse/ID darf nur Kleinbuchstaben, Zahlen und Bindestriche enthalten.");
     return errors;
   }
@@ -510,10 +655,9 @@
     idTouched = false;
 
     $("[data-project-form]").reset();
-    setCategorySelect("fotografie");
+    setCategoryCheckboxes([]);
 
     coverItem = freshCover();
-    $("#f-cover-type").value = "image";
     renderCoverFields();
 
     mediaList = [];
@@ -536,23 +680,22 @@
 
     $("#f-title").value = project.title || "";
     $("#f-id").value = project.id || "";
-    setCategorySelect(project.category);
+    setCategoryCheckboxes(normalizeCategories(project));
     $("#f-date").value = project.date || "";
     $("#f-location").value = project.location || "";
     $("#f-client").value = project.client || "";
     $("#f-tags").value = (project.tags || []).join(", ");
     $("#f-summary").value = project.summary || "";
     $("#f-description").value = (project.description || []).join("\n\n");
+    $("#f-offline").checked = !!project.offline;
 
+    // Titelbild ist immer ein Bild — ein aus einer alten Version noch
+    // vorhandenes Video-Titelbild wird beim Laden nicht mehr übernommen
+    // (unter "Galerie" als normalen Video-Eintrag anlegen stattdessen).
     var rawCover = project.cover || {};
-    coverItem = {
-      type: rawCover.type || "image",
-      src: rawCover.src || "",
-      alt: rawCover.alt || "",
-      provider: rawCover.provider || "file",
-      poster: rawCover.poster || "",
-    };
-    $("#f-cover-type").value = coverItem.type;
+    coverItem = rawCover.type === "video"
+      ? freshCover()
+      : { type: "image", src: rawCover.src || "", alt: rawCover.alt || "" };
     renderCoverFields();
 
     mediaList = (project.media || []).map(function (m) {
@@ -601,6 +744,17 @@
   }
 
   // ---- Vorschau im echten Design ----------------------------------------------
+  // Spiegelt js/project.js: Querformat-Bilder bekommen zwei zusammengefügte
+  // Hochformat-Plätze im Galerie-Grid (siehe .media-item--landscape,
+  // style.css) — für eine pixelgenaue Vorschau hier genauso ermittelt.
+  function applyGalleryOrientation(img, figure) {
+    function check() {
+      if (img.naturalWidth > img.naturalHeight) figure.classList.add("media-item--landscape");
+    }
+    if (img.complete && img.naturalWidth) check();
+    else img.addEventListener("load", check);
+  }
+
   function buildPreviewMediaItem(item) {
     var figure = document.createElement("figure");
     figure.className = "media-item media-item--" + item.type;
@@ -610,6 +764,8 @@
       img.src = resolveItemPreviewSrc(item) || "";
       img.alt = item.alt || "";
       figure.appendChild(img);
+      if (item.keepFormat) figure.classList.add("media-item--keep-format");
+      else applyGalleryOrientation(img, figure);
     } else if (item.provider === "file") {
       var video = document.createElement("video");
       video.controls = true;
@@ -636,17 +792,25 @@
     article.className = "project-card";
     article.innerHTML =
       '<div class="project-card__link">' +
-        '<div class="project-card__media"><img class="project-card__image" alt=""><span class="project-card__play" aria-hidden="true" hidden></span></div>' +
+        '<div class="project-card__media"><img class="project-card__image" alt=""><div class="project-card__text-cover" hidden><p></p></div></div>' +
         '<div class="project-card__body">' +
           '<div class="project-card__text"><span class="project-card__category"></span><h3 class="project-card__title"></h3></div>' +
           '<span class="project-card__arrow" aria-hidden="true">→</span>' +
         '</div>' +
       '</div>';
     var img = article.querySelector(".project-card__image");
-    img.src = resolveCoverThumbSrc() || "";
-    img.alt = coverItem.alt || project.title;
-    article.querySelector(".project-card__play").hidden = coverItem.type !== "video";
-    article.querySelector(".project-card__category").textContent = CATEGORY_LABELS[project.category] || project.category || "—";
+    var thumbSrc = coverItem.src ? resolveItemPreviewSrc(coverItem) : null;
+    if (thumbSrc) {
+      img.src = thumbSrc;
+      img.alt = coverItem.alt || project.title;
+    } else {
+      article.querySelector(".project-card__media").classList.add("project-card__media--text");
+      img.remove();
+      var textCover = article.querySelector(".project-card__text-cover");
+      textCover.hidden = false;
+      textCover.querySelector("p").textContent = project.summary || project.title || "Ohne Titel";
+    }
+    article.querySelector(".project-card__category").textContent = categoryLabels(project.categories) || "—";
     article.querySelector(".project-card__title").textContent = project.title || "Ohne Titel";
     host.appendChild(article);
   }
@@ -660,7 +824,7 @@
 
     var category = document.createElement("p");
     category.className = "project-detail__category";
-    category.textContent = CATEGORY_LABELS[project.category] || project.category || "—";
+    category.textContent = categoryLabels(project.categories) || "—";
     wrap.appendChild(category);
 
     var title = document.createElement("h1");
@@ -686,13 +850,6 @@
     });
     wrap.appendChild(metaList);
 
-    if (project.summary) {
-      var summary = document.createElement("p");
-      summary.className = "project-detail__intro";
-      summary.textContent = project.summary;
-      wrap.appendChild(summary);
-    }
-
     if (coverItem.src || coverItem._file) {
       var heroWrap = document.createElement("div");
       heroWrap.className = "project-detail__hero";
@@ -700,9 +857,19 @@
       wrap.appendChild(heroWrap);
     }
 
+    if (project.summary) {
+      var summary = document.createElement("p");
+      summary.className = "project-detail__intro";
+      summary.textContent = project.summary;
+      wrap.appendChild(summary);
+    }
+
     var gallery = document.createElement("div");
     gallery.className = "project-detail__gallery";
-    mediaList.forEach(function (item) { gallery.appendChild(buildPreviewMediaItem(item)); });
+    mediaList.forEach(function (item) {
+      if (coverItem.src && item.src === coverItem.src) return; // Duplikat des Titelbilds überspringen
+      gallery.appendChild(buildPreviewMediaItem(item));
+    });
     wrap.appendChild(gallery);
 
     if (project.description.length) {
@@ -745,8 +912,15 @@
 
   function updatePreview() {
     var project = collectProject();
+    renderOfflineNotice(project);
     renderCardPreview(project);
     renderDetailPreview(project);
+  }
+
+  function renderOfflineNotice(project) {
+    var notice = $("[data-offline-notice]");
+    if (!notice) return;
+    notice.hidden = !project.offline;
   }
 
   // ---- Projektliste ------------------------------------------------------------
@@ -761,7 +935,8 @@
       li.className = "project-list-item" + (index === currentIndex ? " is-active" : "");
 
       var thumb = document.createElement("img");
-      thumb.src = toSiteRelativePath(project.cover && project.cover.src);
+      var thumbSrc = project.cover && project.cover.src;
+      if (thumbSrc) thumb.src = toSiteRelativePath(thumbSrc);
       thumb.alt = "";
       li.appendChild(thumb);
 
@@ -769,8 +944,15 @@
       text.className = "project-list-item__text";
       var titleEl = document.createElement("strong");
       titleEl.textContent = project.title || "(ohne Titel)";
+      if (project.offline) {
+        var offlineBadge = document.createElement("span");
+        offlineBadge.className = "badge badge--offline";
+        offlineBadge.textContent = "Offline";
+        titleEl.appendChild(document.createTextNode(" "));
+        titleEl.appendChild(offlineBadge);
+      }
       var catEl = document.createElement("small");
-      catEl.textContent = CATEGORY_LABELS[project.category] || project.category || "";
+      catEl.textContent = categoryLabels(normalizeCategories(project));
       text.appendChild(titleEl);
       text.appendChild(catEl);
       li.appendChild(text);
@@ -964,6 +1146,21 @@
         : "dein Browser unterstützt direktes Speichern nicht — nutze stattdessen Download/Kopieren.");
   }
 
+  // Die drei Kategorien der Bereiche-Karten — Titel und Icon sind fix im
+  // HTML (index.html), hier werden nur Text, Werkzeug-Tags und die
+  // Reihenfolge editiert (siehe data-service-block, ↑↓-Buttons unten).
+  var SERVICE_CATEGORIES = ["lichttechnik", "fotografie", "videografie"];
+
+  // Deaktiviert ↑ am ersten und ↓ am letzten Block, je nach aktueller
+  // Reihenfolge im DOM.
+  function updateServiceMoveButtons() {
+    var blocks = $all("[data-service-block]");
+    blocks.forEach(function (block, index) {
+      block.querySelector('[data-service-move="up"]').disabled = index === 0;
+      block.querySelector('[data-service-move="down"]').disabled = index === blocks.length - 1;
+    });
+  }
+
   // ---- Formular <-> Datenmodell (Seiteninhalte) --------------------------------
   function loadSiteIntoForm(data) {
     var brand = data.brand || {};
@@ -972,21 +1169,43 @@
     var contact = data.contact || {};
     var footer = data.footer || {};
     var aboutImage = about.image || {};
+    var services = data.services || [];
 
     $("#s-brand-name").value = brand.name || "";
     $("#s-brand-highlight").value = brand.highlight || "";
-    $("#s-hero-eyebrow").value = hero.eyebrow || "";
     $("#s-hero-heading").value = hero.heading || "";
     $("#s-hero-lede").value = hero.lede || "";
-    $("#s-about-heading").value = about.heading || "";
-    $("#s-about-paragraphs").value = (about.paragraphs || []).join("\n\n");
-    $("#s-about-tags").value = (about.tags || []).join(", ");
     $("#s-about-image-path").value = aboutImage.src || "";
     $("#s-about-image-alt").value = aboutImage.alt || "";
+
+    // Reihenfolge der Karten-Blöcke im Formular an die geladene Reihenfolge
+    // anpassen (appendChild auf ein bereits vorhandenes Kind verschiebt es
+    // nur ans Ende, statt es zu klonen — so geht dabei nichts verloren).
+    var blocksContainer = $("[data-service-blocks]");
+    services.forEach(function (s) {
+      var block = blocksContainer.querySelector('[data-service-category="' + s.category + '"]');
+      if (block) blocksContainer.appendChild(block);
+    });
+    updateServiceMoveButtons();
+
+    SERVICE_CATEGORIES.forEach(function (category) {
+      var service = services.filter(function (s) { return s.category === category; })[0] || {};
+      $("#s-service-" + category + "-text").value = service.text || "";
+      $("#s-service-" + category + "-tools").value = (service.tools || []).join(", ");
+    });
+
     $("#s-contact-heading").value = contact.heading || "";
     $("#s-contact-text").value = contact.text || "";
     $("#s-contact-email").value = contact.email || "";
     $("#s-footer-copyright").value = footer.copyright || "";
+
+    var legal = data.legal || {};
+    $("#s-legal-name").value = legal.name || "";
+    $("#s-legal-street").value = legal.street || "";
+    $("#s-legal-zip-city").value = legal.zipCity || "";
+    $("#s-legal-phone").value = legal.phone || "";
+    $("#s-legal-vat").value = legal.vatId || "";
+    $("#s-legal-hosting").value = legal.hostingProvider || "";
 
     socialList = (contact.social || []).map(function (s) { return { label: s.label || "", url: s.url || "" }; });
     renderSocialRows();
@@ -999,16 +1218,23 @@
         highlight: $("#s-brand-highlight").value.trim(),
       },
       hero: {
-        eyebrow: $("#s-hero-eyebrow").value.trim(),
         heading: $("#s-hero-heading").value.trim(),
         lede: $("#s-hero-lede").value.trim(),
       },
       about: {
-        heading: $("#s-about-heading").value.trim(),
-        paragraphs: $("#s-about-paragraphs").value.split(/\n\s*\n/).map(function (s) { return s.trim(); }).filter(Boolean),
-        tags: $("#s-about-tags").value.split(",").map(function (s) { return s.trim(); }).filter(Boolean),
         image: { src: $("#s-about-image-path").value.trim(), alt: $("#s-about-image-alt").value.trim() },
       },
+      // In der aktuellen (ggf. per ↑↓ geänderten) Reihenfolge der Blöcke im
+      // Formular — nicht in der festen SERVICE_CATEGORIES-Reihenfolge —,
+      // damit sich die Kartenreihenfolge auf der Website mit ändert.
+      services: $all("[data-service-block]").map(function (block) {
+        var category = block.dataset.serviceCategory;
+        return {
+          category: category,
+          text: $("#s-service-" + category + "-text").value.trim(),
+          tools: $("#s-service-" + category + "-tools").value.split(",").map(function (s) { return s.trim(); }).filter(Boolean),
+        };
+      }),
       contact: {
         heading: $("#s-contact-heading").value.trim(),
         text: $("#s-contact-text").value.trim(),
@@ -1016,6 +1242,14 @@
         social: socialList.filter(function (s) { return s.url; }),
       },
       footer: { copyright: $("#s-footer-copyright").value.trim() },
+      legal: {
+        name: $("#s-legal-name").value.trim(),
+        street: $("#s-legal-street").value.trim(),
+        zipCity: $("#s-legal-zip-city").value.trim(),
+        phone: $("#s-legal-phone").value.trim(),
+        vatId: $("#s-legal-vat").value.trim(),
+        hostingProvider: $("#s-legal-hosting").value.trim(),
+      },
     };
   }
 
@@ -1045,9 +1279,19 @@
     el.style.color = isError ? "#dc2626" : "";
   }
 
+  function setLegalFormStatus(text, isError) {
+    var el = $("[data-legal-form-message]");
+    el.textContent = text || "";
+    el.style.color = isError ? "#dc2626" : "";
+  }
+
   // ---- Laden ---------------------------------------------------------------------
+  // { cache: "no-store" } ist hier wichtig: ohne das kann der Browser eine
+  // ältere, zwischengespeicherte Antwort liefern, obwohl die Datei auf der
+  // Festplatte längst neuer ist — das führte sonst zu einer falschen
+  // "wurde seit dem Laden verändert"-Warnung beim nächsten Speichern.
   function loadProjects() {
-    return fetch("../data/projects.json")
+    return fetch("../data/projects.json", { cache: "no-store" })
       .then(function (res) {
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.text();
@@ -1070,7 +1314,7 @@
   }
 
   function loadSite() {
-    return fetch("../data/site.json")
+    return fetch("../data/site.json", { cache: "no-store" })
       .then(function (res) {
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.text();
@@ -1092,7 +1336,7 @@
     loadProjects();
     loadSite();
 
-    setCategorySelect("fotografie");
+    setCategoryCheckboxes([]);
     renderCoverFields();
     renderMediaRows();
     renderLinksList();
@@ -1108,8 +1352,28 @@
         $all("[data-tab-panel]").forEach(function (panel) {
           panel.hidden = panel.dataset.tabPanel !== btn.dataset.editorTab;
         });
+        updateFloatingSaveLabel();
       });
     });
+
+    // ---- Immer sichtbarer Speichern-Button unten rechts ----
+    // Übernimmt Beschriftung und Klick-Verhalten vom "echten" Speichern-Button
+    // des gerade offenen Tabs (Projekt/Seiteninhalte/Rechtliches) — ein
+    // Klick löst also exakt dasselbe Speichern samt Validierung aus, nur
+    // ohne dafür ans Formularende scrollen zu müssen.
+    function activeSubmitButton() {
+      var panel = $all("[data-tab-panel]").filter(function (p) { return !p.hidden; })[0];
+      return panel ? panel.querySelector('button[type="submit"]') : null;
+    }
+    function updateFloatingSaveLabel() {
+      var submitBtn = activeSubmitButton();
+      $("[data-floating-save]").textContent = submitBtn ? submitBtn.textContent : "Speichern";
+    }
+    $("[data-floating-save]").addEventListener("click", function () {
+      var submitBtn = activeSubmitButton();
+      if (submitBtn) submitBtn.click();
+    });
+    updateFloatingSaveLabel();
 
     // ---- Verbindung ----
     $("[data-connect-folder]").addEventListener("click", function () {
@@ -1129,22 +1393,38 @@
       updatePreview();
     });
     $("#f-id").addEventListener("input", function () { idTouched = true; });
+    $("#f-offline").addEventListener("change", updatePreview);
 
-    $("#f-category").addEventListener("change", function () {
-      var isCustom = $("#f-category").value === "__custom__";
-      $("[data-category-custom-wrap]").hidden = !isCustom;
-      $("[data-category-hint]").hidden = !isCustom;
-      updatePreview();
+    $all("[data-category-checkbox]").forEach(function (cb) {
+      cb.addEventListener("change", updatePreview);
     });
 
-    $("#f-cover-type").addEventListener("change", function () {
-      coverItem.type = $("#f-cover-type").value;
-      if (coverItem.type === "video" && !coverItem.provider) coverItem.provider = "file";
+    $("[data-remove-cover]").addEventListener("click", function () {
+      if (coverItem._fileUrl) URL.revokeObjectURL(coverItem._fileUrl);
+      coverItem = freshCover();
       renderCoverFields();
     });
 
+    // "+ Bild" öffnet einen Mehrfachauswahl-Dialog (siehe addImagesFromFiles);
+    // "+ Video" legt weiterhin eine einzelne leere Zeile an (Datei-Upload,
+    // YouTube- oder Vimeo-Link — passt nicht in eine Mehrfachauswahl).
+    var multiImagePicker = document.createElement("input");
+    multiImagePicker.type = "file";
+    multiImagePicker.accept = "image/*";
+    multiImagePicker.multiple = true;
+    multiImagePicker.hidden = true;
+    document.body.appendChild(multiImagePicker);
+    multiImagePicker.addEventListener("change", function () {
+      if (multiImagePicker.files.length) addImagesFromFiles(multiImagePicker.files);
+      multiImagePicker.value = ""; // erlaubt erneutes Auswählen derselben Datei(en)
+    });
+
     $all("[data-add-media]").forEach(function (btn) {
-      btn.addEventListener("click", function () { addMedia(btn.dataset.addMedia); });
+      if (btn.dataset.addMedia === "image") {
+        btn.addEventListener("click", function () { multiImagePicker.click(); });
+      } else {
+        btn.addEventListener("click", function () { addMedia(btn.dataset.addMedia); });
+      }
     });
 
     $("[data-add-link]").addEventListener("click", function () {
@@ -1241,6 +1521,22 @@
       renderSocialRows();
     });
 
+    // Bereiche-Karten per ↑↓ neu anordnen — verschiebt nur den Block im DOM
+    // (die Eingabefelder darin bleiben unangetastet, nichts geht verloren).
+    $all("[data-service-block]").forEach(function (block) {
+      block.querySelector('[data-service-move="up"]').addEventListener("click", function () {
+        var prev = block.previousElementSibling;
+        if (prev) block.parentNode.insertBefore(block, prev);
+        updateServiceMoveButtons();
+      });
+      block.querySelector('[data-service-move="down"]').addEventListener("click", function () {
+        var next = block.nextElementSibling;
+        if (next) block.parentNode.insertBefore(next, block);
+        updateServiceMoveButtons();
+      });
+    });
+    updateServiceMoveButtons();
+
     $("[data-site-form]").addEventListener("submit", function (e) {
       e.preventDefault();
       setSiteFormStatus("Speichere …");
@@ -1258,9 +1554,33 @@
       });
     });
 
-    $("[data-download-site-json]").addEventListener("click", function () {
-      downloadTextFile("site.json", buildSiteJsonString(collectSiteContent()));
-      setSiteFormStatus("site.json heruntergeladen – ersetze data/site.json in deinem Projektordner damit.");
+    // "Rechtliches" ist ein eigener Tab/Formular, landet aber in derselben
+    // site.json wie "Seiteninhalte" — persistSite() sammelt bei jedem
+    // Speichern ohnehin den kompletten aktuellen Formular-Stand (siehe
+    // collectSiteContent), unabhängig davon, welcher Tab gerade sichtbar ist.
+    $("[data-legal-form]").addEventListener("submit", function (e) {
+      e.preventDefault();
+      setLegalFormStatus("Speichere …");
+      persistSite().then(function (result) {
+        if (result.saved) {
+          setLegalFormStatus("Gespeichert — data/site.json aktualisiert" + (result.fileCount ? " (+ " + result.fileCount + " Datei(en))." : "."));
+        } else if (result.reason === "not-connected") {
+          setLegalFormStatus(notConnectedMessage("Die rechtlichen Angaben sind"), true);
+        } else {
+          setLegalFormStatus("Speichern abgebrochen.", true);
+        }
+      }).catch(function (err) {
+        console.error(err);
+        setLegalFormStatus("Speichern fehlgeschlagen: " + err.message, true);
+      });
+    });
+
+    $all("[data-download-site-json]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        downloadTextFile("site.json", buildSiteJsonString(collectSiteContent()));
+        var msg = btn.closest("form").querySelector("[data-site-form-message], [data-legal-form-message]");
+        if (msg) { msg.textContent = "site.json heruntergeladen – ersetze data/site.json in deinem Projektordner damit."; msg.style.color = ""; }
+      });
     });
 
     updatePreview();

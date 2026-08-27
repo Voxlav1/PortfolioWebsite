@@ -4,70 +4,421 @@
     {
       "id": "sommerkonzert-der-ursulaschule",
       "title": "Sommerkonzert der Ursulaschule",
-      "category": "fotografie",
+      "categories": [
+        "fotografie"
+      ],
       "date": "",
       "location": "Osnabrück",
       "client": "Ursulaschule",
       "tags": [],
       "summary": "Fotographie für das Sommerkonzert der Ursulaschule Osnabrück, in Zusammenarbeit mit der VideoAG!",
       "description": [],
-      "cover": {
-        "src": "assets/images/bildschirmfoto-2026-07-17-um-17-42-33.png",
-        "alt": ""
-      },
-      "media": [
-        {
-          "type": "image",
-          "src": "assets/images/bildschirmfoto-2026-07-17-um-17-42-33.png",
-          "alt": ""
-        }
-      ]
+      "media": [],
+      "links": [],
+      "offline": true
     },
     {
       "id": "maiwoche-2026",
       "title": "Maiwoche 2026",
-      "category": "lichttechnik",
-      "date": "",
+      "categories": [
+        "lichttechnik"
+      ],
+      "date": "2026-05",
       "location": "Osnabrück",
-      "client": "BigBand Ursulaschule",
-      "tags": [],
-      "summary": "Lichttechnik für den Auftritt der BigBand auf der Maiwoche",
+      "client": "Big Band Unicorns Ursulaschule",
+      "tags": [
+        "Gymnasium Ursulaschule"
+      ],
+      "summary": "Lichtshow für die Big Band Unicorns der Ursulaschule Osnabrück auf der Maiwoche",
       "description": [],
-      "cover": {
-        "src": "assets/images/bildschirmfoto-2026-08-03-um-17-40-11.png",
-        "alt": ""
-      },
-      "media": [
-        {
-          "type": "image",
-          "src": "assets/images/bildschirmfoto-2026-08-03-um-17-40-11.png",
-          "alt": ""
-        }
-      ]
+      "media": [],
+      "links": [],
+      "offline": true
     },
     {
       "id": "lichtshow-fuer-ein-masterprojekt",
-      "title": "Lichtshow für ein Masterprojekt",
-      "category": "lichttechnik",
-      "date": "",
+      "title": "Musikvideo \"In Your Fantasy\" Ateez",
+      "categories": [
+        "lichttechnik"
+      ],
+      "date": "2026-08",
       "location": "Detmold",
       "client": "TH OWL",
       "tags": [
-        "Licht",
-        "Video",
-        "Astera"
+        "GrandMA3",
+        "Astera Titan Tubes",
+        "ARRI L-7C | Orbiter | Skypanel",
+        "JB Sparx 9"
       ],
-      "summary": "Eine Lichtshow für ein Musikvideo als Projekt einer Masterstudentin",
+      "summary": "Lichtdesign und -programmierung für ein Musikvideo",
       "description": [
-        "Hier durfte ich das Lichtdesign und die Lichtshow für ein Musikvideo als Masterprojekt für eine Masterstudentin realisieren."
+        "Für eine Masterstudentin der TH OWL durfte ich bei ihrem Musikvideo zu dem Song \"In Your Fantasy\" von Ateez das Lichtdesign und die Lichtprogrammierung übernehmen. Die Show läuft auf Timecode über GrandMA3."
+      ],
+      "media": [],
+      "links": [],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/bildschirmfoto-2026-07-17-um-17-47-10.png",
+        "alt": "GrandMA 3 Visualisierung"
+      }
+    },
+    {
+      "id": "greenbeats-backstage-doku",
+      "title": "Greenbeats Backstage Doku",
+      "categories": [
+        "videografie"
+      ],
+      "date": "2026-05",
+      "location": "Bielefeld",
+      "client": "Show&Tell Productions GmbH",
+      "tags": [
+        "Canon R6m2",
+        "Rode Wireless Pro",
+        "DJI Ronin S2"
+      ],
+      "summary": "Greenbeats Backstage Dokumentation in der Stadthalle Bielefeld",
+      "description": [
+        "Die Greenbeats habe ich einen Tag lang von Ankunft der Trucks bis zum Ende der Show bei ihrem Auftritt in der Stadthalle Bielefeld 2026 begleitet, woraus diese Doku entstand."
+      ],
+      "media": [
+        {
+          "type": "video",
+          "src": "https://www.youtube-nocookie.com/embed/9vxN2Dyrl88",
+          "alt": "Greenbeats Backstage",
+          "provider": "youtube"
+        }
+      ],
+      "links": [
+        {
+          "label": "Greenbeats Backstage",
+          "url": "https://youtu.be/9vxN2Dyrl88?si=0PC7tTu0c6WDn_ms"
+        }
       ],
       "cover": {
         "type": "image",
-        "src": "assets/images",
-        "alt": "GrandMA 3 Visualisierung"
-      },
-      "media": [],
+        "src": "assets/images/img-7805.jpeg",
+        "alt": "Stadthalle Bielefeld"
+      }
+    },
+    {
+      "id": "highlands-schottland",
+      "title": "Highlands Schottland",
+      "categories": [
+        "fotografie"
+      ],
+      "date": "2024-07",
+      "location": "Schottland",
+      "client": "Privat",
+      "tags": [],
+      "summary": "Urlaub in Schottland",
+      "description": [],
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/images/img-9397.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9392.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9391.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9390.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9309.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/dji-fly-20240706-171938-635-1720283541939-photo-optimized.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/dji-fly-20240630-192618-567-1719772861252-photo-optimized.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/dji-fly-20240706-212928-688-1720298260199-photo-optimized.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9254.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9393.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9412.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9169.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9132.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9138.jpeg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/img-9133.jpeg",
+          "alt": ""
+        }
+      ],
+      "links": [],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/img-9127-1.jpeg",
+        "alt": ""
+      }
+    },
+    {
+      "id": "windpark-gausekoete-kurzdokumentation",
+      "title": "Windpark Gauseköte Kurzdokumentation",
+      "categories": [
+        "videografie"
+      ],
+      "date": "2026-06",
+      "location": "Detmold",
+      "client": "TH OWL",
+      "tags": [],
+      "summary": "Umstrittener Bau der Windräder an der Gauseköte",
+      "description": [
+        "Im Rahmen des Studiums haben wir mit einer Gruppe von 5 Studenten im Fach Postproduktion Video eine Kurzdokumentation über den Windradbau auf der Gauseköte im Teutoburger Wald in Detmold gedreht."
+      ],
+      "media": [
+        {
+          "type": "video",
+          "src": "assets/videos/pv-2-2-frye-2026-07-26.mp4",
+          "alt": "",
+          "provider": "file"
+        }
+      ],
+      "links": [],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/dji-fly-20260625-152638-219-1782394053477-photo-optimized.jpeg",
+        "alt": ""
+      }
+    },
+    {
+      "id": "ein-funke-hoffnung",
+      "title": "Ein Funke Hoffnung",
+      "categories": [
+        "videografie"
+      ],
+      "date": "2026-06",
+      "location": "Bielefeld",
+      "client": "TH OWL",
+      "tags": [
+        "Nikon Z6 III",
+        "Nikkor 24-70mm f/2.8 S",
+        "Nikkor 180-600mm f/5.6-6.3",
+        "Aputure 300X",
+        "ARRI L7-C",
+        "Sennheiser ME66",
+        "Zoom H6"
+      ],
+      "summary": "48h Kurzfilmkontest der TH OWL | Thema: Falsche Erinnerung",
+      "description": [],
+      "media": [
+        {
+          "type": "video",
+          "src": "https://www.youtube-nocookie.com/embed/aL-j2P6nNX8",
+          "alt": "Ein Funke Hoffnung YouTube",
+          "provider": "youtube"
+        }
+      ],
+      "links": [],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/filmposter-kfc26.jpg",
+        "alt": ""
+      }
+    },
+    {
+      "id": "big-band-unicorns-maiwoche-osnabrueck-2025",
+      "title": "Big Band Unicorns auf der Maiwoche",
+      "categories": [
+        "fotografie",
+        "videografie"
+      ],
+      "date": "2025-05",
+      "location": "Maiwoche Osnabrück",
+      "client": "Gymnasium Ursulaschule",
+      "tags": [
+        "Blackmagic Pocket 6K",
+        "Canon R6m2",
+        "Canon R8"
+      ],
+      "summary": "Auftritt der Big Band Unicorns des Gymnasiums Ursulaschule Osnabrück auf der Maiwoche Osnabrück 2025",
+      "description": [
+        "Mit einem Team aus 5 Leuten haben wir den Auftritt der Big Band gefilmt und fotografiert."
+      ],
+      "media": [
+        {
+          "type": "video",
+          "src": "https://www.youtube-nocookie.com/embed/CGAPKd2ZDv8",
+          "alt": "",
+          "provider": "youtube"
+        }
+      ],
+      "links": [
+        {
+          "label": "Websiteartikel Ursulaschule",
+          "url": "https://ursulaschule.de/veranstaltungen/635-unicorns-auf-der-maiwoche"
+        }
+      ],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/bigbandmaiwoche25.jpeg",
+        "alt": ""
+      }
+    },
+    {
+      "id": "schulfahrt-ursulaschule-nach-assisi-italien",
+      "title": "Schulfahrt Ursulaschule nach Assisi Italien",
+      "categories": [
+        "fotografie",
+        "videografie"
+      ],
+      "date": "2023-10",
+      "location": "Assisi",
+      "client": "Gymnasium Ursulaschule",
+      "tags": [],
+      "summary": "",
+      "description": [],
+      "media": [
+        {
+          "type": "video",
+          "src": "https://www.youtube-nocookie.com/embed/MbaqlFc0wu8",
+          "alt": "",
+          "provider": "youtube"
+        }
+      ],
+      "links": [
+        {
+          "label": "Assisi-Fahrt der Ursulaschule",
+          "url": "https://ursulaschule.de/schulleben2/assisifahrt"
+        }
+      ],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/img-8018-1.jpeg",
+        "alt": ""
+      }
+    },
+    {
+      "id": "imagefilm-gymnasium-ursulaschule-osnabrueck",
+      "title": "Imagefilm Gymnasium Ursulaschule Osnabrück",
+      "categories": [
+        "videografie"
+      ],
+      "date": "2025-07",
+      "location": "Osnabrück",
+      "client": "Gymnasium Ursulaschule",
+      "tags": [],
+      "summary": "Imagefilm für das Gymnasium Ursulaschule Osnabrück",
+      "description": [],
+      "media": [
+        {
+          "type": "video",
+          "src": "https://www.youtube-nocookie.com/embed/k_pMN12TQgc",
+          "alt": "",
+          "provider": "youtube"
+        }
+      ],
       "links": []
+    },
+    {
+      "id": "berchtesgaden",
+      "title": "Berchtesgaden",
+      "categories": [
+        "fotografie"
+      ],
+      "date": "2025-12",
+      "location": "Berchtesgaden",
+      "client": "Privat",
+      "tags": [],
+      "summary": "",
+      "description": [],
+      "media": [
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25-2.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25-10.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25-1-2.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25-1.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25-4.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/schneeflocken.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/berchtesgadenwinter25-5.jpg",
+          "alt": ""
+        },
+        {
+          "type": "image",
+          "src": "assets/images/startrails-5.jpg",
+          "alt": ""
+        }
+      ],
+      "links": [],
+      "cover": {
+        "type": "image",
+        "src": "assets/images/berchtesgadenwinter25-3-2.jpg",
+        "alt": ""
+      }
     }
   ]
 }

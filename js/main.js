@@ -3,10 +3,11 @@
  * Nur auf index.html geladen.
  * Lädt data/projects.json, rendert die Projekt-Kacheln über das
  * <template id="project-card-template"> in index.html und steuert die
- * Filter-Leiste (Alle / Fotografie / Video / Lichttechnik). Die anklickbaren
- * Karten im "Bereiche"-Abschnitt nutzen dieselbe Filterlogik (siehe
- * initBereicheLinks) — neue Kategorie? Auch dort einen data-filter-jump
- * ergänzen (siehe README, Abschnitt 3 "Neue Kategorie hinzufügen").
+ * Filter-Leiste (Alle / Fotografie / Videografie / Lichttechnik). Die
+ * anklickbaren kleinen Karten in "Über mich" nutzen dieselbe Filterlogik
+ * (siehe initBereicheLinks) — neue Kategorie? Auch dort einen
+ * data-filter-jump ergänzen (siehe README, Abschnitt 3 "Neue Kategorie
+ * hinzufügen").
  *
  * Neues Projekt hinzufügen? Kein Code hier anfassen — einfach einen
  * neuen Eintrag in data/projects.json ergänzen. Siehe README.md.
@@ -14,7 +15,7 @@
 (function () {
   var CATEGORY_LABELS = {
     fotografie: "Fotografie",
-    video: "Video",
+    videografie: "Videografie",
     lichttechnik: "Lichttechnik",
   };
 
@@ -22,45 +23,53 @@
     return CATEGORY_LABELS[category] || category;
   }
 
-  // Erkennt eine YouTube-Video-ID sowohl in normalen als auch in
-  // -nocookie-Embed-URLs, um daraus automatisch ein Vorschaubild zu bauen.
-  function extractYouTubeId(url) {
-    if (!url) return null;
-    var match = url.match(/(?:youtube(?:-nocookie)?\.com\/embed\/|youtu\.be\/)([\w-]{6,})/);
-    return match ? match[1] : null;
+  // Ein Projekt kann mehreren Kategorien angehören ("categories": [...]).
+  // Ältere Einträge kennen noch das einzelne "category"-Feld (inkl. dem
+  // inzwischen umbenannten Wert "video") — wird hier automatisch übersetzt,
+  // damit beide Schreibweisen funktionieren.
+  function getCategories(project) {
+    if (Array.isArray(project.categories) && project.categories.length) return project.categories;
+    if (project.category) return [project.category === "video" ? "videografie" : project.category];
+    return [];
   }
 
-  // Das Titelbild eines Projekts kann laut projects.json ein Bild ODER ein
-  // Video sein (Datei/YouTube/Vimeo, siehe README). Für die Kachel hier wird
-  // in jedem Fall ein einzelnes Vorschaubild gebraucht:
-  //  - Bild: der hinterlegte Pfad
-  //  - YouTube-Video: automatisch das offizielle YouTube-Vorschaubild
-  //  - Datei-/Vimeo-Video: das optionale "poster"-Feld, sonst ein Platzhalter
-  function resolveCoverImageSrc(cover) {
-    var type = (cover && cover.type) || "image"; // ältere Projekte ohne "type" = Bild
-    if (type !== "video") return cover.src;
+  function categoryLabels(project) {
+    return getCategories(project).map(categoryLabel).join(" · ");
+  }
 
-    if (cover.provider === "youtube") {
-      var id = extractYouTubeId(cover.src);
-      if (id) return "https://img.youtube.com/vi/" + id + "/hqdefault.jpg";
-    }
-    return cover.poster || "assets/images/video-poster.svg";
+  // Das Titelbild eines Projekts ist immer ein Bild (siehe README, Abschnitt
+  // "Titelbild") — oder fehlt ganz, dann zeigt die Kachel stattdessen Text
+  // (siehe buildCard).
+  function resolveCoverImageSrc(cover) {
+    return (cover && cover.src) || null;
   }
 
   function buildCard(project, template) {
     var node = template.content.cloneNode(true);
     var article = node.querySelector(".project-card");
     var link = node.querySelector(".project-card__link");
+    var mediaWrap = node.querySelector(".project-card__media");
     var image = node.querySelector(".project-card__image");
-    var playBadge = node.querySelector(".project-card__play");
-    var coverType = (project.cover && project.cover.type) || "image";
+    var textCover = node.querySelector(".project-card__text-cover");
+    var coverSrc = resolveCoverImageSrc(project.cover);
 
-    article.dataset.category = project.category;
+    article.dataset.category = getCategories(project).join(" ");
     link.href = "project.html?id=" + encodeURIComponent(project.id);
-    image.src = resolveCoverImageSrc(project.cover);
-    image.alt = (project.cover && project.cover.alt) || project.title;
-    playBadge.hidden = coverType !== "video";
-    node.querySelector(".project-card__category").textContent = categoryLabel(project.category);
+
+    if (coverSrc) {
+      image.src = coverSrc;
+      image.alt = (project.cover && project.cover.alt) || project.title;
+      textCover.hidden = true;
+    } else {
+      // Kein Titelbild/-video hinterlegt: Kurzbeschreibung stattdessen zeigen,
+      // damit die Kachel nicht leer/kaputt aussieht.
+      mediaWrap.classList.add("project-card__media--text");
+      image.remove();
+      textCover.hidden = false;
+      textCover.querySelector("p").textContent = project.summary || project.title;
+    }
+
+    node.querySelector(".project-card__category").textContent = categoryLabels(project);
     node.querySelector(".project-card__title").textContent = project.title;
 
     return node;
@@ -87,7 +96,7 @@
   }
 
   // Wird sowohl von den Filter-Buttons als auch von den anklickbaren
-  // "Bereiche"-Karten weiter oben auf der Seite genutzt (siehe initBereicheLinks).
+  // kleinen Bereiche-Karten in "Über mich" genutzt (siehe initBereicheLinks).
   function applyFilter(filter, buttons, projects) {
     buttons.forEach(function (b) {
       var isActive = b.dataset.filter === filter;
@@ -96,7 +105,7 @@
     });
 
     var filtered = filter === "alle" ? projects : projects.filter(function (p) {
-      return p.category === filter;
+      return getCategories(p).indexOf(filter) > -1;
     });
     renderGrid(filtered);
   }
@@ -111,8 +120,8 @@
     return buttons;
   }
 
-  // Macht die Karten im "Bereiche"-Abschnitt anklickbar: Klick wendet den
-  // passenden Filter auf das Projekt-Grid an und scrollt sanft zu #arbeiten.
+  // Macht die kleinen Bereiche-Karten in "Über mich" anklickbar: Klick
+  // wendet den passenden Filter auf das Projekt-Grid an und scrollt sanft zu #arbeiten.
   // Der Sprung wird bewusst selbst ausgelöst (statt sich auf den nativen
   // Anker-Sprung des href zu verlassen), weil das Neuaufbauen des Grids im
   // selben Klick den nativen Scroll in manchen Browsern verhindert.
@@ -149,7 +158,7 @@
         return response.json();
       })
       .then(function (data) {
-        var projects = (data && data.projects) || [];
+        var projects = ((data && data.projects) || []).filter(function (p) { return !p.offline; });
         renderGrid(projects);
         var buttons = initFilters(projects);
         initBereicheLinks(projects, buttons);

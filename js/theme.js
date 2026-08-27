@@ -1,12 +1,15 @@
 /**
  * theme.js
- * Steuert den Hell/Dunkel-Umschalter im Header.
+ * Steuert den Hell/Dunkel-Umschalter im Header — und dessen zweite Kopie im
+ * mobilen Ausklapp-Menü (auf schmalen Bildschirmen verschwindet die
+ * Header-Variante, siehe style.css). Beide tragen [data-theme-toggle] und
+ * werden hier synchron gehalten.
  *
  * Die eigentliche Theme-Erkennung (localStorage bzw. Systempräferenz)
  * passiert bewusst NICHT hier, sondern in einem kleinen Inline-Script im
  * <head> jeder Seite — so wird das Theme gesetzt, BEVOR die Seite
  * gezeichnet wird (kein kurzes "Aufblitzen" des falschen Themes).
- * Dieses Script kümmert sich nur noch um den Klick auf den Umschalter.
+ * Dieses Script kümmert sich nur noch um den Klick auf den/die Umschalter.
  */
 (function () {
   var STORAGE_KEY = "portfolio-theme";
@@ -21,17 +24,17 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var toggle = document.querySelector("[data-theme-toggle]");
-    if (!toggle) return;
+    var toggles = document.querySelectorAll("[data-theme-toggle]");
+    if (!toggles.length) return;
 
-    toggle.addEventListener("click", function () {
-      var current = document.documentElement.getAttribute("data-theme");
-      var next = current === "dark" ? "light" : "dark";
-      applyTheme(next);
-      toggle.setAttribute(
-        "aria-label",
-        next === "dark" ? "Zu hellem Design wechseln" : "Zu dunklem Design wechseln"
-      );
+    toggles.forEach(function (toggle) {
+      toggle.addEventListener("click", function () {
+        var current = document.documentElement.getAttribute("data-theme");
+        var next = current === "dark" ? "light" : "dark";
+        applyTheme(next);
+        var label = next === "dark" ? "Zu hellem Design wechseln" : "Zu dunklem Design wechseln";
+        toggles.forEach(function (t) { t.setAttribute("aria-label", label); });
+      });
     });
   });
 })();

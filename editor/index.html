@@ -30,6 +30,11 @@
 
       <nav class="nav-links" id="primary-navigation" data-nav-links aria-label="Hauptnavigation">
         <a href="../index.html">Zur Website</a>
+        <button class="theme-toggle theme-toggle--menu" data-theme-toggle type="button" aria-label="Zu dunklem Design wechseln">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+          <span>Design wechseln</span>
+        </button>
       </nav>
 
       <div class="header-actions">
@@ -61,6 +66,7 @@
       <div class="tab-switch" role="tablist" aria-label="Editor-Bereich">
         <button class="tab-switch__btn is-active" type="button" data-editor-tab="projects" role="tab" aria-selected="true">Projekte</button>
         <button class="tab-switch__btn" type="button" data-editor-tab="site" role="tab" aria-selected="false">Seiteninhalte</button>
+        <button class="tab-switch__btn" type="button" data-editor-tab="legal" role="tab" aria-selected="false">Rechtliches</button>
       </div>
 
       <!-- Verbindung zum Projektordner: einmal pro Sitzung herstellen, danach
@@ -99,34 +105,32 @@
           </div>
 
           <form data-project-form novalidate>
-            <fieldset>
-              <legend>Grunddaten</legend>
+            <details class="field-group" open>
+              <summary>Grunddaten</summary>
+              <div class="field-group__body">
 
               <div class="field">
                 <label for="f-title">Titel *</label>
                 <input id="f-title" type="text" placeholder="z. B. Sommerfestival – Bühnenlicht">
               </div>
 
-              <div class="field-row">
-                <div class="field">
-                  <label for="f-category">Kategorie *</label>
-                  <select id="f-category">
-                    <option value="fotografie">Fotografie</option>
-                    <option value="video">Video</option>
-                    <option value="lichttechnik">Lichttechnik</option>
-                    <option value="__custom__">Andere / neue Kategorie …</option>
-                  </select>
-                </div>
-                <div class="field" data-category-custom-wrap hidden>
-                  <label for="f-category-custom">Neue Kategorie</label>
-                  <input id="f-category-custom" type="text" placeholder="z. B. installation">
+              <div class="field">
+                <label>Kategorien * <span class="hint" style="font-weight:400;">(Mehrfachauswahl möglich)</span></label>
+                <div class="checkbox-group">
+                  <label class="checkbox-field"><input type="checkbox" data-category-checkbox value="fotografie"> Fotografie</label>
+                  <label class="checkbox-field"><input type="checkbox" data-category-checkbox value="videografie"> Videografie</label>
+                  <label class="checkbox-field"><input type="checkbox" data-category-checkbox value="lichttechnik"> Lichttechnik</label>
                 </div>
               </div>
-              <p class="hint" data-category-hint hidden>
-                Neue Kategorien tauchen auf der Website nur unter „Alle“ auf, solange kein
-                passender Filter-Button existiert. Ergänze bei Bedarf einen Button in index.html
-                (README, Abschnitt 3).
-              </p>
+              <div class="field">
+                <label for="f-category-custom">Weitere Kategorie(n)</label>
+                <input id="f-category-custom" type="text" placeholder="z. B. installation, event">
+                <p class="hint">
+                  Mit Komma trennen. Tauchen auf der Website nur unter „Alle“ auf, solange kein
+                  passender Filter-Button existiert — bei Bedarf einen in index.html ergänzen
+                  (README, Abschnitt 3).
+                </p>
+              </div>
 
               <div class="field">
                 <label for="f-id">Adresse/ID *</label>
@@ -155,10 +159,17 @@
                 <input id="f-tags" type="text" placeholder="Bühne, Festival, Moving Heads">
                 <p class="hint">Mit Komma trennen.</p>
               </div>
-            </fieldset>
 
-            <fieldset>
-              <legend>Beschreibung</legend>
+              <label class="checkbox-field">
+                <input type="checkbox" id="f-offline">
+                Projekt offline (nicht auf der Website anzeigen, nur hier im Editor bearbeitbar)
+              </label>
+              </div>
+            </details>
+
+            <details class="field-group">
+              <summary>Beschreibung</summary>
+              <div class="field-group__body">
 
               <div class="field">
                 <label for="f-summary">Kurzbeschreibung</label>
@@ -170,43 +181,47 @@
                 <textarea id="f-description" rows="6" placeholder="Ein Absatz pro Leerzeile."></textarea>
                 <p class="hint">Leerzeile = neuer Absatz.</p>
               </div>
-            </fieldset>
+              </div>
+            </details>
 
-            <fieldset>
-              <legend>Titelbild</legend>
+            <details class="field-group" open>
+              <summary>Titelbild<span class="badge" data-cover-status hidden>gesetzt</span></summary>
+              <div class="field-group__body">
               <p class="hint">
-                Erscheint als Kachel-Vorschau auf der Startseite und groß oben auf der
-                Projekt-Detailseite. Kann ein Bild oder ein Video sein (Datei oder YouTube/Vimeo).
+                Optional, immer ein Bild (kein Video). Erscheint als Kachel-Vorschau auf der
+                Startseite und links oben auf der Projekt-Detailseite. Ohne Titelbild zeigt die
+                Website an dieser Stelle stattdessen die Kurzbeschreibung. Für Videos: unten unter
+                „Galerie“ als normalen Eintrag hinzufügen.
               </p>
 
-              <div class="field">
-                <label for="f-cover-type">Art des Titelbilds</label>
-                <select id="f-cover-type">
-                  <option value="image">Bild</option>
-                  <option value="video">Video</option>
-                </select>
-              </div>
+              <button class="btn btn--secondary btn--sm" type="button" data-remove-cover>Titelbild entfernen</button>
 
               <div data-cover-fields></div>
-            </fieldset>
+              </div>
+            </details>
 
-            <fieldset>
-              <legend>Galerie (weitere Bilder &amp; Videos)</legend>
+            <details class="field-group">
+              <summary>Galerie (weitere Bilder &amp; Videos)</summary>
+              <div class="field-group__body">
               <div data-media-rows></div>
               <div class="media-add-row">
                 <button class="btn btn--secondary btn--sm" type="button" data-add-media="image">+ Bild</button>
                 <button class="btn btn--secondary btn--sm" type="button" data-add-media="video">+ Video</button>
               </div>
-            </fieldset>
+              <p class="hint">Bei „+ Bild“ kannst du im Dateidialog mehrere Bilder auf einmal auswählen — Hoch- und Querformat gemischt ist kein Problem, sie werden auf der Website automatisch passend einsortiert (siehe „Format behalten“ pro Bild weiter unten für eine Ausnahme davon).</p>
+              </div>
+            </details>
 
-            <fieldset>
-              <legend>Links (Website, YouTube, Instagram …)</legend>
+            <details class="field-group">
+              <summary>Links (Website, YouTube, Instagram …)</summary>
+              <div class="field-group__body">
               <p class="hint">Erscheinen als kleine Buttons unten auf der Projekt-Detailseite, öffnen in neuem Tab.</p>
               <div data-link-rows></div>
               <div class="media-add-row">
                 <button class="btn btn--secondary btn--sm" type="button" data-add-link>+ Link</button>
               </div>
-            </fieldset>
+              </div>
+            </details>
 
             <div class="form-actions">
               <button class="btn btn--primary" type="submit" data-save-to-list>Projekt speichern</button>
@@ -227,6 +242,10 @@
             </div>
           </div>
 
+          <p class="offline-notice" data-offline-notice hidden>
+            <strong>Offline:</strong> Dieses Projekt ist nur hier im Editor sichtbar und wird auf der echten Website nicht angezeigt.
+          </p>
+
           <div class="preview-surface" data-preview-card>
             <div class="preview-card-frame"></div>
           </div>
@@ -237,12 +256,11 @@
 
       <!-- Nur Backup/Fallback — solange oben verbunden ist, speichert der
            Formular-Button bereits automatisch, siehe editor.js. -->
-      <div class="panel backup-options">
-        <div class="panel__head">
-          <h2>Sicherung (optional)</h2>
-        </div>
+      <details class="field-group backup-options">
+        <summary>Sicherung (optional)<span class="badge" data-export-count>0 Projekte</span></summary>
+        <div class="field-group__body">
         <p class="hint">
-          <strong data-export-count>0 Projekte</strong> in dieser Sitzung.<span data-pending-files-hint hidden></span>
+          <span data-pending-files-hint hidden></span>
           Diese beiden Buttons sind nur für ein zusätzliches Backup oder falls dein Browser die
           direkte Speicherung (oben) nicht unterstützt.
         </p>
@@ -251,7 +269,8 @@
           <button class="btn btn--secondary btn--sm" type="button" data-copy-json>JSON kopieren</button>
         </div>
         <p class="hint" data-export-status></p>
-      </div>
+        </div>
+      </details>
 
       <div class="panel pending-files" data-pending-files-panel hidden>
         <h2>Noch abzulegende Dateien</h2>
@@ -278,8 +297,9 @@
         </p>
 
         <form data-site-form novalidate>
-          <fieldset>
-            <legend>Name</legend>
+          <details class="field-group" open>
+            <summary>Name</summary>
+            <div class="field-group__body">
             <div class="field-row">
               <div class="field">
                 <label for="s-brand-name">Name (normal)</label>
@@ -291,40 +311,20 @@
               </div>
             </div>
             <p class="hint">Erscheint im Header als „Dein Name“ — der zweite Teil wird grün eingefärbt.</p>
-          </fieldset>
-
-          <fieldset>
-            <legend>Hero (Startseite, ganz oben)</legend>
-            <div class="field">
-              <label for="s-hero-eyebrow">Kleine Zeile über der Überschrift</label>
-              <input id="s-hero-eyebrow" type="text">
             </div>
+          </details>
+
+          <details class="field-group" open>
+            <summary>Hero (Startseite, ganz oben)</summary>
+            <div class="field-group__body">
             <div class="field">
               <label for="s-hero-heading">Überschrift</label>
               <input id="s-hero-heading" type="text">
-              <p class="hint">*Sternchen* um ein Wort machen es grün/kursiv, z. B. „*Licht*. Bild.“</p>
+              <p class="hint">*Sternchen* um ein Wort machen es grün/kursiv, z. B. „*Licht*. Bild.“ Bleibt am besten kurz — sie steht einzeilig neben dem Portrait.</p>
             </div>
             <div class="field">
               <label for="s-hero-lede">Lauftext</label>
               <textarea id="s-hero-lede" rows="3"></textarea>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Über mich</legend>
-            <div class="field">
-              <label for="s-about-heading">Überschrift</label>
-              <input id="s-about-heading" type="text">
-            </div>
-            <div class="field">
-              <label for="s-about-paragraphs">Text</label>
-              <textarea id="s-about-paragraphs" rows="6"></textarea>
-              <p class="hint">Leerzeile = neuer Absatz.</p>
-            </div>
-            <div class="field">
-              <label for="s-about-tags">Ausrüstung/Software (Tags)</label>
-              <input id="s-about-tags" type="text">
-              <p class="hint">Mit Komma trennen.</p>
             </div>
             <div class="field-row">
               <div class="field">
@@ -340,10 +340,82 @@
               <label for="s-about-image-alt">Alt-Text</label>
               <input id="s-about-image-alt" type="text">
             </div>
-          </fieldset>
+            </div>
+          </details>
 
-          <fieldset>
-            <legend>Kontakt</legend>
+          <details class="field-group">
+            <summary>Bereiche-Karten</summary>
+            <div class="field-group__body">
+            <p class="hint">
+              Eigener Abschnitt direkt unter dem Hero (Lichttechnik, Fotografie,
+              Videografie). Titel und Icon sind fix im HTML; Text, Werkzeuge und
+              die Reihenfolge der Karten kannst du hier anpassen (↑↓).
+            </p>
+
+            <div data-service-blocks>
+              <div class="media-row" data-service-block data-service-category="lichttechnik">
+                <div class="media-row__head">
+                  <strong>Lichttechnik</strong>
+                  <div class="media-row__actions">
+                    <button class="icon-btn" type="button" data-service-move="up" aria-label="Nach oben" title="Nach oben">↑</button>
+                    <button class="icon-btn" type="button" data-service-move="down" aria-label="Nach unten" title="Nach unten">↓</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="s-service-lichttechnik-text">Text</label>
+                  <input id="s-service-lichttechnik-text" type="text">
+                </div>
+                <div class="field">
+                  <label for="s-service-lichttechnik-tools">Werkzeuge (Tags)</label>
+                  <input id="s-service-lichttechnik-tools" type="text" placeholder="z. B. GrandMA3, Moving Heads">
+                  <p class="hint">Mit Komma trennen. Weitere einfach dazuschreiben.</p>
+                </div>
+              </div>
+
+              <div class="media-row" data-service-block data-service-category="fotografie">
+                <div class="media-row__head">
+                  <strong>Fotografie</strong>
+                  <div class="media-row__actions">
+                    <button class="icon-btn" type="button" data-service-move="up" aria-label="Nach oben" title="Nach oben">↑</button>
+                    <button class="icon-btn" type="button" data-service-move="down" aria-label="Nach unten" title="Nach unten">↓</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="s-service-fotografie-text">Text</label>
+                  <input id="s-service-fotografie-text" type="text">
+                </div>
+                <div class="field">
+                  <label for="s-service-fotografie-tools">Werkzeuge (Tags)</label>
+                  <input id="s-service-fotografie-tools" type="text" placeholder="z. B. Lightroom, Photoshop">
+                  <p class="hint">Mit Komma trennen. Weitere einfach dazuschreiben.</p>
+                </div>
+              </div>
+
+              <div class="media-row" data-service-block data-service-category="videografie">
+                <div class="media-row__head">
+                  <strong>Videografie</strong>
+                  <div class="media-row__actions">
+                    <button class="icon-btn" type="button" data-service-move="up" aria-label="Nach oben" title="Nach oben">↑</button>
+                    <button class="icon-btn" type="button" data-service-move="down" aria-label="Nach unten" title="Nach unten">↓</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="s-service-videografie-text">Text</label>
+                  <input id="s-service-videografie-text" type="text">
+                </div>
+                <div class="field">
+                  <label for="s-service-videografie-tools">Werkzeuge (Tags)</label>
+                  <input id="s-service-videografie-tools" type="text" placeholder="z. B. DaVinci Resolve Studio">
+                  <p class="hint">Mit Komma trennen. Weitere einfach dazuschreiben.</p>
+                </div>
+              </div>
+            </div>
+            </div>
+          </details>
+
+          <details class="field-group">
+            <summary>Kontakt</summary>
+            <div class="field-group__body">
             <div class="field">
               <label for="s-contact-heading">Überschrift</label>
               <input id="s-contact-heading" type="text">
@@ -361,15 +433,18 @@
             <div class="media-add-row">
               <button class="btn btn--secondary btn--sm" type="button" data-add-social>+ Social-Link</button>
             </div>
-          </fieldset>
+            </div>
+          </details>
 
-          <fieldset>
-            <legend>Footer</legend>
+          <details class="field-group">
+            <summary>Footer</summary>
+            <div class="field-group__body">
             <div class="field">
               <label for="s-footer-copyright">Copyright-Zeile</label>
               <input id="s-footer-copyright" type="text">
             </div>
-          </fieldset>
+            </div>
+          </details>
 
           <div class="form-actions">
             <button class="btn btn--primary" type="submit" data-save-site>Seiteninhalte speichern</button>
@@ -379,8 +454,77 @@
         </form>
       </section>
 
+      <section class="panel editor-form editor-form--site" data-tab-panel="legal" aria-label="Rechtliches bearbeiten" hidden>
+        <div class="panel__head">
+          <h2>Rechtliches</h2>
+          <span class="badge" data-legal-form-status>—</span>
+        </div>
+        <p class="hint">
+          Füllt die eckigen Platzhalter auf <a href="../impressum.html" target="_blank" rel="noopener">Impressum</a>
+          und <a href="../datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a> aus.
+          Gespeichert wird ebenfalls in data/site.json — dieselbe Verbindung wie bei „Seiteninhalte“.
+          Beide Seiten bleiben unverbindliche Vorlagen — einmal ganz durchlesen und im Zweifel
+          rechtlich prüfen lassen, bevor du live gehst.
+        </p>
+
+        <form data-legal-form novalidate>
+          <details class="field-group" open>
+            <summary>Angaben zur Person (für beide Seiten)</summary>
+            <div class="field-group__body">
+            <div class="field">
+              <label for="s-legal-name">Vorname Nachname</label>
+              <input id="s-legal-name" type="text">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="s-legal-street">Straße Hausnummer</label>
+                <input id="s-legal-street" type="text">
+              </div>
+              <div class="field">
+                <label for="s-legal-zip-city">PLZ Ort</label>
+                <input id="s-legal-zip-city" type="text">
+              </div>
+            </div>
+            <div class="field">
+              <label for="s-legal-phone">Telefon <span class="hint" style="font-weight:400;">(optional)</span></label>
+              <input id="s-legal-phone" type="text">
+              <p class="hint">Leer lassen, um die Telefon-Zeile im Impressum ganz wegzulassen.</p>
+            </div>
+            <div class="field">
+              <label for="s-legal-vat">Umsatzsteuer-ID <span class="hint" style="font-weight:400;">(optional)</span></label>
+              <input id="s-legal-vat" type="text">
+              <p class="hint">Leer lassen, um den Absatz im Impressum ganz wegzulassen.</p>
+            </div>
+            <p class="hint">Die E-Mail-Adresse kommt automatisch aus „Seiteninhalte“ → „Kontakt“.</p>
+            </div>
+          </details>
+
+          <details class="field-group">
+            <summary>Datenschutz</summary>
+            <div class="field-group__body">
+            <div class="field">
+              <label for="s-legal-hosting">Hosting-Anbieter</label>
+              <input id="s-legal-hosting" type="text" placeholder="z. B. Netlify, GitHub Pages, IONOS …">
+              <p class="hint">Erscheint im Satz „Diese Website wird bei … gehostet.“ (Abschnitt „Hosting und Server-Logfiles“).</p>
+            </div>
+            </div>
+          </details>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit" data-save-legal>Rechtliches speichern</button>
+            <button class="btn btn--secondary btn--sm" type="button" data-download-site-json>Nur als site.json herunterladen</button>
+          </div>
+          <p class="hint" data-legal-form-message></p>
+        </form>
+      </section>
+
     </div>
   </main>
+
+  <!-- Immer sichtbarer Speichern-Button unten rechts — speichert je nach
+       gerade offenem Tab das Projekt, die Seiteninhalte oder das
+       Rechtliche, ohne dass man dafür ganz nach unten scrollen muss. -->
+  <button type="button" class="btn btn--primary floating-save" data-floating-save>Speichern</button>
 
   <footer class="site-footer">
     <div class="container">

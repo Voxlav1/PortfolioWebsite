@@ -37,9 +37,12 @@
 
       <nav class="nav-links" id="primary-navigation" data-nav-links aria-label="Hauptnavigation">
         <a href="#arbeiten">Arbeiten</a>
-        <a href="#leistungen">Bereiche</a>
-        <a href="#ueber-mich">Über mich</a>
         <a href="#kontakt">Kontakt</a>
+        <button class="theme-toggle theme-toggle--menu" data-theme-toggle type="button" aria-label="Zu dunklem Design wechseln">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+          <span>Design wechseln</span>
+        </button>
       </nav>
 
       <div class="header-actions">
@@ -58,73 +61,63 @@
 
     <!-- ============ HERO ============ -->
     <section class="hero" id="top">
-      <div class="container">
-        <p class="eyebrow hero__eyebrow" data-site-hero-eyebrow>Lichttechnik · Fotografie · Videografie</p>
-        <h1 data-site-hero-heading><em>Licht</em>. Bild. Bewegung.</h1>
-        <p class="hero__lede" data-site-hero-lede>
-          Ich bin Dein Name und studiere Medienproduktion. Nebenbei beschäftige ich mich mit
-          Lichttechnik, Fotografie und Video – hier sammle ich ein paar der Projekte, die dabei
-          entstanden sind.
-        </p>
-        <div class="hero__actions">
-          <a class="btn btn--primary" href="#arbeiten">Projekte ansehen</a>
-          <a class="btn btn--secondary" href="#kontakt">Kontakt aufnehmen</a>
+      <div class="container hero__grid">
+        <div class="hero__content">
+          <h1 data-site-hero-heading><em>Licht</em>. Bild. Bewegung.</h1>
+          <p class="hero__lede" data-site-hero-lede>
+            Ich bin Dein Name und studiere Medienproduktion. Nebenbei beschäftige ich mich mit
+            Lichttechnik, Fotografie und Video – hier sammle ich ein paar der Projekte, die dabei
+            entstanden sind.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#arbeiten">Projekte ansehen</a>
+            <a class="btn btn--secondary" href="#kontakt">Kontakt aufnehmen</a>
+          </div>
         </div>
-        <a class="hero__scroll" href="#leistungen">
-          Entdecken
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
-        </a>
+        <div class="hero__media">
+          <img data-site-about-image src="assets/images/placeholder-b.svg" alt="Platzhalter-Portrait — eigenes Foto einsetzen">
+        </div>
       </div>
     </section>
 
-    <!-- ============ LEISTUNGEN ============ -->
-    <section id="leistungen">
+    <!-- ============ BEREICHE-KARTEN ============
+         Jede Karte springt zu #arbeiten und filtert das Projekt-Grid dort
+         automatisch auf die passende Kategorie (siehe js/main.js). Text und
+         Werkzeug-Tags kommen aus data/site.json (Feld "services"). -->
+    <section id="bereiche">
       <div class="container">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Bereiche</p>
-            <h2>Womit ich mich beschäftige.</h2>
-          </div>
-          <p>Drei Bereiche, die sich für mich gut ergänzen.</p>
-        </div>
-
-        <!-- Jede Karte springt zu #arbeiten und filtert das Projekt-Grid dort
-             automatisch auf die passende Kategorie (siehe js/main.js). -->
-        <div class="services-grid">
-          <a class="service-card" href="#arbeiten" data-filter-jump="lichttechnik">
-            <div class="service-card__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.45 1.1 1.2 1.1 2.2h5c0-1 .5-1.75 1.1-2.2A6 6 0 0 0 12 3Z"/></svg>
+        <div class="about-services__grid">
+          <a class="about-service-card" href="#arbeiten" data-filter-jump="lichttechnik" data-service="lichttechnik">
+            <div class="about-service-card__head">
+              <div class="about-service-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.45 1.1 1.2 1.1 2.2h5c0-1 .5-1.75 1.1-2.2A6 6 0 0 0 12 3Z"/></svg>
+              </div>
+              <h3>Lichttechnik</h3>
             </div>
-            <h3>Lichttechnik</h3>
-            <p>Von Bühnenshows bis kleinen Club-Setups – ich beschäftige mich mit Lichtkonzepten, die Räume und Auftritte in Szene setzen.</p>
-            <span class="service-card__cta">
-              Projekte ansehen
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </span>
+            <p data-service-text>Lichtkonzepte für Bühnenshows und kleine Club-Setups.</p>
+            <div class="about-service-card__tools" data-service-tools></div>
           </a>
 
-          <a class="service-card" href="#arbeiten" data-filter-jump="fotografie">
-            <div class="service-card__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+          <a class="about-service-card" href="#arbeiten" data-filter-jump="fotografie" data-service="fotografie">
+            <div class="about-service-card__head">
+              <div class="about-service-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+              </div>
+              <h3>Fotografie</h3>
             </div>
-            <h3>Fotografie</h3>
-            <p>Ob Portrait, Event oder einfach unterwegs – ich halte gerne Momente fest.</p>
-            <span class="service-card__cta">
-              Projekte ansehen
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </span>
+            <p data-service-text>Ob Portrait, Event oder einfach unterwegs – ich halte gerne Momente fest.</p>
+            <div class="about-service-card__tools" data-service-tools></div>
           </a>
 
-          <a class="service-card" href="#arbeiten" data-filter-jump="video">
-            <div class="service-card__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M21 8.5v7L17 13v-2l4-2.5Z"/></svg>
+          <a class="about-service-card" href="#arbeiten" data-filter-jump="videografie" data-service="videografie">
+            <div class="about-service-card__head">
+              <div class="about-service-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M21 8.5v7L17 13v-2l4-2.5Z"/></svg>
+              </div>
+              <h3>Videografie</h3>
             </div>
-            <h3>Videografie</h3>
-            <p>Von kleinen Musikvideos bis Imagefilmen – vom Dreh bis zum Schnitt beschäftige ich mich mit bewegten Bildern.</p>
-            <span class="service-card__cta">
-              Projekte ansehen
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </span>
+            <p data-service-text>Vom Dreh bis zum Schnitt – von Musikvideos bis Imagefilmen.</p>
+            <div class="about-service-card__tools" data-service-tools></div>
           </a>
         </div>
       </div>
@@ -138,16 +131,15 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Arbeiten</p>
-            <h2>Ausgewählte Projekte</h2>
+            <h2>Meine Projekte</h2>
           </div>
-          <p>Ein Einblick in aktuelle Arbeiten aus Lichttechnik, Fotografie und Videografie.</p>
-        </div>
 
-        <div class="filter-bar" role="tablist" aria-label="Projekte filtern">
-          <button class="filter-btn is-active" type="button" data-filter="alle" role="tab" aria-selected="true">Alle</button>
-          <button class="filter-btn" type="button" data-filter="fotografie" role="tab" aria-selected="false">Fotografie</button>
-          <button class="filter-btn" type="button" data-filter="video" role="tab" aria-selected="false">Video</button>
-          <button class="filter-btn" type="button" data-filter="lichttechnik" role="tab" aria-selected="false">Lichttechnik</button>
+          <div class="filter-bar" role="tablist" aria-label="Projekte filtern">
+            <button class="filter-btn is-active" type="button" data-filter="alle" role="tab" aria-selected="true">Alle</button>
+            <button class="filter-btn" type="button" data-filter="fotografie" role="tab" aria-selected="false">Fotografie</button>
+            <button class="filter-btn" type="button" data-filter="videografie" role="tab" aria-selected="false">Videografie</button>
+            <button class="filter-btn" type="button" data-filter="lichttechnik" role="tab" aria-selected="false">Lichttechnik</button>
+          </div>
         </div>
 
         <div class="project-grid" data-project-grid aria-live="polite"></div>
@@ -160,7 +152,7 @@
             <a class="project-card__link" href="project.html">
               <div class="project-card__media">
                 <img class="project-card__image" src="" alt="" loading="lazy">
-                <span class="project-card__play" aria-hidden="true" hidden></span>
+                <div class="project-card__text-cover" hidden><p></p></div>
               </div>
               <div class="project-card__body">
                 <div class="project-card__text">
@@ -177,38 +169,8 @@
       </div>
     </section>
 
-    <!-- ============ ÜBER MICH ============ -->
-    <section id="ueber-mich">
-      <div class="container about">
-        <div class="about__media">
-          <img data-site-about-image src="assets/images/placeholder-b.svg" alt="Platzhalter-Portrait — eigenes Foto einsetzen">
-        </div>
-        <div class="about__body">
-          <p class="eyebrow">Über mich</p>
-          <h2 data-site-about-heading>Zwischen Lichtpult, Kamera und Schnittprogramm.</h2>
-          <div data-site-about-paragraphs>
-            <p>
-              Ich studiere Medienproduktion und beschäftige mich nebenbei mit drei Bereichen, die
-              sich für mich gut ergänzen: Lichttechnik, Fotografie und Videografie.
-            </p>
-            <p>
-              Diese Seite ist ein Sammelplatz für Projekte, die dabei nach und nach entstehen –
-              manche im Studium, manche einfach nebenbei.
-            </p>
-          </div>
-          <div class="about__tags" data-site-about-tags>
-            <span class="tag">Adobe Premiere Pro</span>
-            <span class="tag">DaVinci Resolve</span>
-            <span class="tag">Lightroom</span>
-            <span class="tag">GrandMA</span>
-            <span class="tag">Moving Heads</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- ============ KONTAKT ============ -->
-    <section class="section-alt" id="kontakt">
+    <section id="kontakt">
       <div class="container contact">
         <div class="section-heading">
           <p class="eyebrow">Kontakt</p>

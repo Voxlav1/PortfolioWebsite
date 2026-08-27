@@ -168,16 +168,52 @@
 .icon-btn:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-text); }
 .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-/* ---- Spalte 2: Formular ---- */
-.editor-form fieldset { border: 0; padding: 0; margin: 0 0 var(--space-lg); }
-.editor-form legend {
+/* ---- Spalte 2: Formular ----
+   Jeder Formular-Abschnitt ist ein <details>, auf- und zuklappbar — hält
+   das Formular vor allem auf schmalen Bildschirmen überschaubar. Pflicht-
+   Abschnitte (z. B. "Titelbild *") stehen standardmäßig offen. */
+.field-group {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  overflow: hidden;
+}
+.field-group + .field-group { margin-top: 0; }
+
+.field-group summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  padding: 0 0 var(--space-sm);
-  width: 100%;
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-md);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background-color var(--transition);
 }
+.field-group summary::-webkit-details-marker { display: none; }
+.field-group summary:hover { background: var(--color-bg-muted); }
+.field-group[open] summary { border-bottom: 1px solid var(--color-border); }
+
+/* Chevron statt Browser-Standarddreieck, dreht sich beim Öffnen */
+.field-group summary::after {
+  content: "";
+  width: 9px; height: 9px;
+  flex-shrink: 0;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: rotate(45deg);
+  transition: transform var(--transition);
+  margin-left: auto;
+}
+.field-group[open] summary::after { transform: rotate(-135deg); }
+
+.field-group__body { padding: var(--space-md); }
+.field-group__body > *:last-child { margin-bottom: 0; }
 
 .field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: var(--space-sm); }
 .field label { font-size: var(--text-sm); font-weight: 600; }
@@ -203,6 +239,15 @@
 
 .hint { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 0.15rem; }
 
+.frame-extract {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: -0.25rem;
+}
+.frame-extract .hint { margin-top: 0; }
+
 .checkbox-field {
   display: flex;
   align-items: center;
@@ -211,6 +256,13 @@
   margin-bottom: var(--space-sm);
 }
 .checkbox-field input { width: auto; }
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.checkbox-group .checkbox-field { margin-bottom: 0; }
 
 .cover-preview { margin-top: var(--space-2xs); }
 .cover-preview img {
@@ -263,6 +315,18 @@
 }
 .badge.is-dirty { background: var(--color-accent-soft); color: var(--color-accent-strong); }
 [data-theme="dark"] .badge.is-dirty { color: var(--color-accent); }
+.badge--offline { background: rgba(217, 119, 6, 0.16); color: #d97706; }
+
+.offline-notice {
+  margin: 0 0 var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  color: #d97706;
+  font-size: var(--text-sm);
+}
+[data-theme="dark"] .offline-notice { color: #fbbf24; }
 
 .btn--sm { padding: 0.5em 1em; font-size: var(--text-xs); }
 
@@ -314,6 +378,18 @@
   font-size: 0.85em;
 }
 
+/* Immer sichtbarer Speichern-Button unten rechts (siehe editor.js) —
+   speichert je nach aktivem Tab Projekt/Seiteninhalte/Rechtliches, ohne
+   dass man dafür ans Ende des jeweiligen Formulars scrollen muss. */
+.floating-save {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: 300;
+  box-shadow: var(--shadow-lg);
+}
+.floating-save:hover { box-shadow: var(--shadow-lg); }
+
 /* ---- Responsive ---- */
 @media (max-width: 1100px) {
   .editor-layout { grid-template-columns: 1fr; }
@@ -328,4 +404,15 @@
   .export-bar__actions { justify-content: stretch; }
   .export-bar__actions .btn { flex: 1; }
   .connection-status { flex-direction: column; align-items: stretch; }
+
+  /* Etwas kompakter, damit auf schmalen Bildschirmen mehr vom Formular
+     ohne Scrollen erkennbar ist. */
+  .panel, .editor-form { padding: var(--space-sm); }
+  .field-group summary { padding: var(--space-xs) var(--space-sm); font-size: var(--text-base); }
+  .field-group__body { padding: var(--space-sm); }
+  .project-list { max-height: 32vh; }
+  .editor-intro { padding-top: var(--space-lg); }
+  .editor-layout { margin-top: var(--space-md); gap: var(--space-sm); }
+
+  .floating-save { bottom: var(--space-sm); right: var(--space-sm); padding: 0.7em 1.2em; }
 }

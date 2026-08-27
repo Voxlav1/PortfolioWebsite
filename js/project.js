@@ -11,7 +11,7 @@
 (function () {
   var CATEGORY_LABELS = {
     fotografie: "Fotografie",
-    video: "Video",
+    videografie: "Videografie",
     lichttechnik: "Lichttechnik",
   };
 
@@ -35,6 +35,19 @@
     return CATEGORY_LABELS[category] || category;
   }
 
+  // Ein Projekt kann mehreren Kategorien angehören ("categories": [...]).
+  // Ältere Einträge kennen noch das einzelne "category"-Feld (inkl. dem
+  // inzwischen umbenannten Wert "video") — wird hier automatisch übersetzt.
+  function getCategories(project) {
+    if (Array.isArray(project.categories) && project.categories.length) return project.categories;
+    if (project.category) return [project.category === "video" ? "videografie" : project.category];
+    return [];
+  }
+
+  function categoryLabels(project) {
+    return getCategories(project).map(categoryLabel).join(" · ");
+  }
+
   function formatDate(value) {
     if (!value) return "";
     var parts = value.split("-");
@@ -54,18 +67,11 @@
     return li;
   }
 
-  // Ältere Projekte kennen bei "cover" noch kein "type"-Feld (war immer ein
-  // Bild). Fehlt es, wird weiterhin "image" angenommen — neue Projekte
-  // können stattdessen "type: video" (Datei/YouTube/Vimeo) nutzen.
+  // Das Titelbild ist immer ein Bild (kein Video) — siehe README, Abschnitt
+  // "Titelbild". Für Videos: als normaler Galerie-Eintrag in "media" anlegen.
   function normalizeCover(cover) {
     cover = cover || {};
-    return {
-      type: cover.type || "image",
-      src: cover.src || "",
-      alt: cover.alt || "",
-      provider: cover.provider,
-      poster: cover.poster,
-    };
+    return { type: "image", src: cover.src || "", alt: cover.alt || "" };
   }
 
   // ---- Lightbox ---------------------------------------------------------
@@ -144,15 +150,32 @@
   // Wird sowohl für das große Titelbild/-video oben (data-hero) als auch für
   // die Galerie darunter (data-gallery) genutzt — beide bekommen dieselben
   // Bild/Video-Typen aus projects.json (cover bzw. media[]).
+  // Erkennt, ob ein Galerie-Bild Quer- oder Hochformat ist, sobald die
+  // tatsächlichen Maße feststehen (bei lazy-loading nicht sofort verfügbar)
+  // — Querformat bekommt dadurch zwei zusammengefügte Hochformat-Plätze im
+  // CSS-Grid, siehe .project-detail__gallery / .media-item--landscape in
+  // style.css. Harmlos, falls figure gar nicht im Galerie-Grid landet (z. B.
+  // Titelbild) — dort greift die Regel wegen fehlendem Eltern-Selektor nicht.
+  function applyGalleryOrientation(img, figure) {
+    function check() {
+      if (img.naturalWidth > img.naturalHeight) figure.classList.add("media-item--landscape");
+    }
+    if (img.complete && img.naturalWidth) check();
+    else img.addEventListener("load", check);
+  }
+
   function buildMediaFigure(item) {
     if (item.type === "image") {
       var tpl = document.getElementById("media-image-template");
       var node = tpl.content.cloneNode(true);
       var img = node.querySelector("img");
+      var figure = node.querySelector(".media-item");
       img.src = item.src;
       img.alt = item.alt || "";
       img.loading = "lazy";
-      return { node: node, figure: node.querySelector(".media-item"), lightboxItem: { src: item.src, alt: item.alt || "" } };
+      if (item.keepFormat) figure.classList.add("media-item--keep-format");
+      else applyGalleryOrientation(img, figure);
+      return { node: node, figure: figure, lightboxItem: { src: item.src, alt: item.alt || "" } };
     }
 
     if (item.provider === "youtube" || item.provider === "vimeo") {
@@ -188,9 +211,13 @@
     });
   }
 
-  // Baut Titelbild/-video und Galerie und sammelt dabei alle Bilder (Titelbild
+  // Baut Titelbild und Galerie und sammelt dabei alle Bilder (Titelbild
   // zuerst, falls es eins ist) in EINER gemeinsamen Lightbox-Liste, damit die
   // Vor-/Zurück-Navigation in der Lightbox über beide Bereiche hinweg passt.
+  // Ein Galerie-Eintrag, der exakt auf dasselbe Titelbild verweist, wird
+  // übersprungen — sonst erschiene dasselbe Bild oben UND unten doppelt.
+  // Hat das Projekt gar kein Titelbild, bleibt der Bereich einfach leer — die
+  // Kurzbeschreibung darunter (data-detail-summary) steht so oder so da.
   function renderHeroAndGallery(project) {
     var heroHost = document.querySelector("[data-hero]");
     var galleryHost = document.querySelector("[data-gallery]");
@@ -210,9 +237,11 @@
     }
 
     var cover = normalizeCover(project.cover);
+    heroHost.hidden = !cover.src;
     if (cover.src) addFigure(heroHost, cover);
 
     (project.media || []).forEach(function (item) {
+      if (cover.src && item.src === cover.src) return; // Duplikat des Titelbilds überspringen
       addFigure(galleryHost, item);
     });
 
@@ -247,7 +276,7 @@
     var metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription && project.summary) metaDescription.setAttribute("content", project.summary);
 
-    document.querySelector("[data-detail-category]").textContent = categoryLabel(project.category);
+    document.querySelector("[data-detail-category]").textContent = categoryLabels(project);
     document.querySelector("[data-detail-title]").textContent = project.title;
 
     var metaList = document.querySelector("[data-detail-meta]");
@@ -323,7 +352,7 @@
         var index = projects.findIndex(function (p) {
           return p.id === id;
         });
-        if (index === -1) {
+        if (index === -1 || projects[index].offline) {
           showNotFound();
           return;
         }
